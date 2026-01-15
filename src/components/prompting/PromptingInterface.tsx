@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import { useCampaignStore } from '../../store/useCampaignStore';
 
 // Widgets
-import { BrandGuidelinesWidget } from './widgets/BrandGuidelinesWidget';
+// import { BrandGuidelinesWidget } from './widgets/BrandGuidelinesWidget';
 import { ProductDetailsWidget } from './widgets/ProductDetailsWidget';
 
 interface Message {
@@ -75,6 +75,7 @@ export const PromptingInterface = () => {
         setMessages(prev => [...prev, { id, type: 'user', content: text }]);
     };
 
+    /*
     const handleBrandComplete = (data: any) => {
         setInput({ brandGuidelines: data.text });
         handleUserResponse("Brand guidelines uploaded successfully.");
@@ -86,6 +87,7 @@ export const PromptingInterface = () => {
             }, 800);
         }, 1000);
     };
+    */
 
     const handleProductComplete = (data: any) => {
         setIsWidgetActive(false); // SHOW INPUT BACK

@@ -3,15 +3,15 @@ import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
 import { useCampaignStore } from '../store/useCampaignStore';
 import { useAuthStore } from '../store/useAuthStore';
-import { useNavigationStore } from '../store/useNavigationStore';
+// import { useNavigationStore } from '../store/useNavigationStore';
 import { AgentExecutionView } from '../components/AgentExecutionView';
 import { PromptingInterface } from '../components/prompting/PromptingInterface';
 import { CreativeReview } from './CreativeReview';
 
 export const Dashboard = () => {
-    const { status, executeCampaign, campaigns, fetchCampaigns, input } = useCampaignStore();
+    const { status, executeCampaign, campaigns, fetchCampaigns } = useCampaignStore();
     const { user } = useAuthStore();
-    const { setView } = useNavigationStore();
+    // const { setView } = useNavigationStore();
 
     useEffect(() => {
         if (user?.id) fetchCampaigns(user.id);

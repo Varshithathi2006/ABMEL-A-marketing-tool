@@ -4,7 +4,7 @@ import { useCampaignStore } from '../store/useCampaignStore';
 import { useMemo } from 'react';
 
 export const GuardrailsPage = () => {
-    const { input, status } = useCampaignStore();
+    const { input } = useCampaignStore();
 
     // Derived active rules based on input
     const rules = useMemo(() => {

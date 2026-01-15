@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Upload, FileText, ChevronRight, CheckCircle, Database } from 'lucide-react';
+import { useState } from 'react';
+import { Upload, CheckCircle, Database } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const CampaignSetup = () => {
@@ -140,11 +140,11 @@ export const CampaignSetup = () => {
                         </div>
 
                         <div className="mt-8 bg-[#0A192F] p-4 rounded border border-slate-700 text-xs text-slate-400">
-                            > INITIALIZING AGENT SWARM...<br />
-                            > PLANNING_AGENT: STANDBY<br />
-                            > MARKET_AGENT: STANDBY<br />
-                            > PERSONA_AGENT: STANDBY<br />
-                            > CREATIVE_AGENT: STANDBY
+                            &gt; INITIALIZING AGENT SWARM...<br />
+                            &gt; PLANNING_AGENT: STANDBY<br />
+                            &gt; MARKET_AGENT: STANDBY<br />
+                            &gt; PERSONA_AGENT: STANDBY<br />
+                            &gt; CREATIVE_AGENT: STANDBY
                         </div>
                     </div>
 

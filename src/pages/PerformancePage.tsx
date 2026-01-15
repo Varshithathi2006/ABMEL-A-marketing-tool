@@ -10,7 +10,7 @@ export const PerformancePage = () => {
     const metrics = useMemo(() => {
         const completed = campaigns.filter(c => c.status === 'Completed').length;
         const active = campaigns.filter(c => c.status === 'Running').length;
-        const total = campaigns.length;
+        // const total = campaigns.length;
 
         // Mocking granular stats based on real counts (since we don't have ad network integration yet)
         // In a real scenario, these would come from an Analytics Service aggregating data.

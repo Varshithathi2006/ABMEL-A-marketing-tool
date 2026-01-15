@@ -78,7 +78,7 @@ export class PlanningAgent extends BaseAgent {
         };
     }
 
-    private constructExecutionPipeline(input: PlanningInput): Record<string, TaskNode> {
+    private constructExecutionPipeline(_input: PlanningInput): Record<string, TaskNode> {
         const nodes: Record<string, TaskNode> = {};
 
         // 1. Market Intelligence

@@ -122,7 +122,6 @@ const NodeStatusIcon = ({ status }: { status: string }) => {
 
 const NodeCard = ({ node }: { node: TaskNode }) => {
     const isActive = node.status === 'running';
-    const isCompleted = node.status === 'completed';
 
     return (
         <motion.div

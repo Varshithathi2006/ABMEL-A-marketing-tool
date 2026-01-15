@@ -18,14 +18,14 @@ export class ExtractionService {
 
         if (fileType === 'text/plain') {
             if (typeof fileContent === 'string') return fileContent;
-            if (Buffer.isBuffer(fileContent)) return fileContent.toString('utf-8');
+            if (typeof fileContent === 'object' && fileContent !== null) return JSON.stringify(fileContent);
             return String(fileContent);
         }
 
         throw new Error('Unsupported file type');
     }
 
-    private simulatePdfExtraction(content: any): string {
+    private simulatePdfExtraction(_content: any): string {
         // In a real verification run, we might scan the buffer for text strings 
         // or just return a placeholder that PROVES the pipeline handles the data flow.
         return `[EXTRACTED FROM PDF]: Brand Tone is Professional, Innovation-focused. Primary Color: Navy. Values: Trust, Speed.`;

@@ -6,7 +6,7 @@ export class LearningAgent extends BaseAgent {
         super('LearningAgent');
     }
 
-    async execute(input: any): Promise<AgentResult> {
+    async execute(_input: any): Promise<AgentResult> {
         this.status = 'running';
         this.log('Saving campaign data for future optimization...');
 

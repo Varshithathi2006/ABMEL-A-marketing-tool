@@ -71,7 +71,7 @@ export class PersonaModelingAgent extends BaseAgent {
         }
     }
 
-    private generatePersonas(industry: string, audienceInput: string): PersonaProfile {
+    private generatePersonas(industry: string, _audienceInput: string): PersonaProfile {
         // In a real system, this would use the Market Intelligence data deeply.
         // Here we use the industry signal to select accurate archetypes.
 

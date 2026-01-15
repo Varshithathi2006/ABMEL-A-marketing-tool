@@ -77,7 +77,7 @@ export class AgentOrchestrator {
     private async runExecutionLoop() {
         if (!this.taskGraph) return;
 
-        const { nodes, context } = this.taskGraph;
+        const { nodes } = this.taskGraph;
         let active = false;
         let allComplete = true;
 
@@ -260,34 +260,11 @@ export class AgentOrchestrator {
         }
 
         // 3. Local File System Persistence (Node.js only - for test_pipeline.ts)
+        // Removed for browser compatibility
+        /*
         if (typeof window === 'undefined') {
-            try {
-                const fs = await import('fs');
-                const path = await import('path');
-
-                const provenanceDir = path.join(process.cwd(), 'src', 'provenance');
-                if (!fs.existsSync(provenanceDir)) {
-                    fs.mkdirSync(provenanceDir, { recursive: true });
-                }
-
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                const filename = `${nodeId}_${timestamp}.json`;
-                const filePath = path.join(provenanceDir, filename);
-
-                const artifact = {
-                    meta: {
-                        nodeId: nodeId,
-                        timestamp: new Date().toISOString(),
-                        agentParams: "default"
-                    },
-                    data: data
-                };
-
-                fs.writeFileSync(filePath, JSON.stringify(artifact, null, 2));
-                console.log(`[Provenance] Artifact saved to disk: ${filename}`);
-            } catch (error) {
-                console.warn(`[Provenance] Skipped saving to disk: ${error}`);
-            }
+             // ...
         }
+        */
     }
 }

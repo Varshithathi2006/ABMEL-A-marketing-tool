@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingBag, Users, Target, Check, DollarSign, Upload } from 'lucide-react';
+import { ShoppingBag, Users, Target, Check, DollarSign } from 'lucide-react';
 import clsx from 'clsx';
 import { TiltCard } from '../../ui/TiltCard';
 

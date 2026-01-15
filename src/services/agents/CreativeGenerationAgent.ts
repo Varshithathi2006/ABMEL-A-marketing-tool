@@ -1,8 +1,9 @@
 import { BaseAgent } from './BaseAgent';
 import type { AgentResult, CreativeVariant } from '../../types/abmel';
 import { GroqService } from '../GroqService';
-import { MockDataService } from '../MockDataService';
+// import { MockDataService } from '../MockDataService';
 
+/*
 export interface CreativePrompt {
     id: string;
     strategy_name: string;
@@ -19,6 +20,7 @@ export interface CreativePrompt {
     };
     rationale: string;
 }
+*/
 
 export class CreativeGenerationAgent extends BaseAgent {
     constructor() {
@@ -32,11 +34,13 @@ export class CreativeGenerationAgent extends BaseAgent {
         try {
             // 1. Gather Context
             const product = input.product || 'Unknown Product';
-            const marketContext = {
+            /*
+            const _marketContext = {
                 summary: input.marketSummary || 'General Market',
                 opportunities: input.opportunities || [],
                 competitors: input.competitors || []
             };
+            */
             const personaData = input.personas || {};
             const primaryPersona = personaData.primaryPersona?.name || 'General Audience';
             const constraints = input.brandGuidelines ? `Brand Constraints: ${input.brandGuidelines}` : 'No specific brand constraints.';
@@ -143,6 +147,7 @@ RULES:
         }
     }
 
+    /*
     private inferIndustry(product: string): any {
         const p = product.toLowerCase();
         if (p.includes('shoe') || p.includes('wear') || p.includes('fashion')) return 'fashion';
@@ -151,4 +156,5 @@ RULES:
         if (p.includes('finance') || p.includes('bank')) return 'finance';
         return 'generic';
     }
+    */
 }
