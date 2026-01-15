@@ -1,0 +1,106 @@
+{
+  "meta": {
+    "nodeId": "persona_modeling",
+    "timestamp": "2026-01-15T03:30:05.928Z",
+    "agentParams": "default"
+  },
+  "data": {
+    "personas": [
+      {
+        "id": "p_gen_1",
+        "name": "The Modern Consumer",
+        "descriptor": "Value-driven shopper",
+        "motivations": [
+          "Quality",
+          "Convenience",
+          "Social Proof"
+        ],
+        "painPoints": [
+          "Wasted money",
+          "Poor service",
+          "Obsolescence"
+        ],
+        "behavioralTraits": {
+          "attentionSpan": "Medium",
+          "purchaseMindset": "considered",
+          "contentPreference": [
+            "Reviews",
+            "Comparison Videos"
+          ]
+        },
+        "preferredPlatforms": [
+          "Facebook",
+          "Instagram",
+          "Search"
+        ],
+        "creativeConstraints": {
+          "tone": "Helpful, Clear, Friendly",
+          "visualStyle": "Product-hero, Lifestyle context",
+          "copyDo": [
+            "Focus on benefits",
+            "Use social proof",
+            "Clear CTA"
+          ],
+          "copyDont": [
+            "Be vague",
+            "Hide pricing"
+          ]
+        }
+      }
+    ],
+    "primaryPersona": {
+      "id": "p_gen_1",
+      "name": "The Modern Consumer",
+      "descriptor": "Value-driven shopper",
+      "motivations": [
+        "Quality",
+        "Convenience",
+        "Social Proof"
+      ],
+      "painPoints": [
+        "Wasted money",
+        "Poor service",
+        "Obsolescence"
+      ],
+      "behavioralTraits": {
+        "attentionSpan": "Medium",
+        "purchaseMindset": "considered",
+        "contentPreference": [
+          "Reviews",
+          "Comparison Videos"
+        ]
+      },
+      "preferredPlatforms": [
+        "Facebook",
+        "Instagram",
+        "Search"
+      ],
+      "creativeConstraints": {
+        "tone": "Helpful, Clear, Friendly",
+        "visualStyle": "Product-hero, Lifestyle context",
+        "copyDo": [
+          "Focus on benefits",
+          "Use social proof",
+          "Clear CTA"
+        ],
+        "copyDont": [
+          "Be vague",
+          "Hide pricing"
+        ]
+      }
+    },
+    "creativeConstraints": {
+      "tone": "Helpful, Clear, Friendly",
+      "visualStyle": "Product-hero, Lifestyle context",
+      "copyDo": [
+        "Focus on benefits",
+        "Use social proof",
+        "Clear CTA"
+      ],
+      "copyDont": [
+        "Be vague",
+        "Hide pricing"
+      ]
+    }
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "meta": {
+    "nodeId": "creative_generation",
+    "timestamp": "2026-01-07T04:00:24.124Z",
+    "agentParams": "default"
+  },
+  "data": {
+    "variants": [
+      {
+        "id": "1",
+        "headline": "FEATURE-LED",
+        "body": "Scene: A busy home office on a Sunday evening, with family members in the background, as our persona prepares for the upcoming workweek. Role: Enabling focus and productivity.",
+        "cta": "View Strategy",
+        "visualDescription": "A warm, slightly cluttered home office with soft evening light, focusing on the persona wearing the NeuralLink Pro Headset, with a shallow depth of field to blur the background",
+        "platform": "Multi-Channel",
+        "rationale": "Targeting The Modern Consumer via Empowerment and control angle.",
+        "raw_prompt": {
+          "id": "1",
+          "strategy_name": "Feature-led",
+          "target_persona": "The Modern Consumer",
+          "persona_usage_context": "A busy home office on a Sunday evening, with family members in the background, as our persona prepares for the upcoming workweek",
+          "product_role": "Enabling focus and productivity",
+          "feature_focus": "Advanced noise cancellation and AI-powered task management",
+          "emotional_angle": "Empowerment and control",
+          "visual_framing": "A warm, slightly cluttered home office with soft evening light, focusing on the persona wearing the NeuralLink Pro Headset, with a shallow depth of field to blur the background",
+          "copy_tone": "Inspirational and functional",
+          "llm_parameters": {
+            "temperature": 0.7,
+            "style_notes": "Emphasize the futuristic and minimalist design of the headset"
+          },
+          "rationale": "Highlighting the product's features in the context of a busy home life shows how it can improve the persona's daily routine"
+        }
+      },
+      {
+        "id": "2",
+        "headline": "PROBLEM–SOLUTION",
+        "body": "Scene: A crowded, noisy coffee shop during lunch hours, as our persona struggles to concentrate on work. Role: Solving the problem of distractions and lack of focus in public spaces.",
+        "cta": "View Strategy",
+        "visualDescription": "A bustling coffee shop with blurred backgrounds, focusing on the persona's stressed expression turning into calm focus as they use the headset",
+        "platform": "Multi-Channel",
+        "rationale": "Targeting The Modern Consumer via Frustration turning into relief angle.",
+        "raw_prompt": {
+          "id": "2",
+          "strategy_name": "Problem–solution",
+          "target_persona": "The Modern Consumer",
+          "persona_usage_context": "A crowded, noisy coffee shop during lunch hours, as our persona struggles to concentrate on work",
+          "product_role": "Solving the problem of distractions and lack of focus in public spaces",
+          "feature_focus": "NeuralLink Pro's advanced brain-computer interface for seamless interaction",
+          "emotional_angle": "Frustration turning into relief",
+          "visual_framing": "A bustling coffee shop with blurred backgrounds, focusing on the persona's stressed expression turning into calm focus as they use the headset",
+          "copy_tone": "Problematic to solution-oriented",
+          "llm_parameters": {
+            "temperature": 0.8,
+            "style_notes": "Use high contrast to emphasize the before-and-after states"
+          },
+          "rationale": "Showing the product as a solution to a real-world problem makes it more relatable and necessary"
+        }
+      },
+      {
+        "id": "3",
+        "headline": "LIFESTYLE / USE-CASE",
+        "body": "Scene: An early morning gym session, with our persona using the NeuralLink Pro to control their workout playlist and track progress. Role: Enhancing and streamlining fitness routines.",
+        "cta": "View Strategy",
+        "visualDescription": "A modern gym with natural light, focusing on the persona in motion, with the headset as a natural part of their workout gear",
+        "platform": "Multi-Channel",
+        "rationale": "Targeting The Modern Consumer via Motivation and satisfaction angle.",
+        "raw_prompt": {
+          "id": "3",
+          "strategy_name": "Lifestyle / use-case",
+          "target_persona": "The Modern Consumer",
+          "persona_usage_context": "An early morning gym session, with our persona using the NeuralLink Pro to control their workout playlist and track progress",
+          "product_role": "Enhancing and streamlining fitness routines",
+          "feature_focus": "Sweat resistance and integrated health tracking",
+          "emotional_angle": "Motivation and satisfaction",
+          "visual_framing": "A modern gym with natural light, focusing on the persona in motion, with the headset as a natural part of their workout gear",
+          "copy_tone": "Energetic and uplifting",
+          "llm_parameters": {
+            "temperature": 0.6,
+            "style_notes": "Incorporate dynamic movements and vibrant colors"
+          },
+          "rationale": "Positioning the product within a specific, modern lifestyle scenario showcases its versatility and appeal"
+        }
+      },
+      {
+        "id": "4",
+        "headline": "EMOTIONAL / IDENTITY-BASED",
+        "body": "Scene: A quiet, personal moment at home, as our persona explores their creativity through art, using the NeuralLink Pro to bring their imagination to life. Role: Unlocking and enhancing creative potential.",
+        "cta": "View Strategy",
+        "visualDescription": "A cozy, dimly lit art studio, with the persona lost in their creative process, the headset subtly integrated into the scene",
+        "platform": "Multi-Channel",
+        "rationale": "Targeting The Modern Consumer via Curiosity and self-discovery angle.",
+        "raw_prompt": {
+          "id": "4",
+          "strategy_name": "Emotional / identity-based",
+          "target_persona": "The Modern Consumer",
+          "persona_usage_context": "A quiet, personal moment at home, as our persona explores their creativity through art, using the NeuralLink Pro to bring their imagination to life",
+          "product_role": "Unlocking and enhancing creative potential",
+          "feature_focus": "Advanced neural interface for artistic expression",
+          "emotional_angle": "Curiosity and self-discovery",
+          "visual_framing": "A cozy, dimly lit art studio, with the persona lost in their creative process, the headset subtly integrated into the scene",
+          "copy_tone": "Reflective and imaginative",
+          "llm_parameters": {
+            "temperature": 0.9,
+            "style_notes": "Use soft, ethereal lighting to evoke a sense of wonder"
+          },
+          "rationale": "Connecting the product with the persona's inner world and creative aspirations can create a deep emotional bond"
+        }
+      },
+      {
+        "id": "5",
+        "headline": "VALUE / PRICE-ANCHORED",
+        "body": "Scene: A comparison shopping scenario, where our persona is researching and comparing different headsets for their needs, focusing on value for money. Role: Offering premium features at an accessible price point.",
+        "cta": "View Strategy",
+        "visualDescription": "A minimalist, well-lit room with several headsets on a table, the NeuralLink Pro prominently displayed with key features highlighted",
+        "platform": "Multi-Channel",
+        "rationale": "Targeting The Modern Consumer via Smart decision-making and satisfaction angle.",
+        "raw_prompt": {
+          "id": "5",
+          "strategy_name": "Value / price-anchored",
+          "target_persona": "The Modern Consumer",
+          "persona_usage_context": "A comparison shopping scenario, where our persona is researching and comparing different headsets for their needs, focusing on value for money",
+          "product_role": "Offering premium features at an accessible price point",
+          "feature_focus": "Advanced technology and durability",
+          "emotional_angle": "Smart decision-making and satisfaction",
+          "visual_framing": "A minimalist, well-lit room with several headsets on a table, the NeuralLink Pro prominently displayed with key features highlighted",
+          "copy_tone": "Informative and confident",
+          "llm_parameters": {
+            "temperature": 0.5,
+            "style_notes": "Use clean lines, and bold typography to convey value and quality"
+          },
+          "rationale": "Highlighting the value proposition in a direct comparison setting can sway the persona's purchasing decision"
+        }
+      }
+    ]
+  }
+}

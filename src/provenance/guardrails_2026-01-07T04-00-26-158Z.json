@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "nodeId": "guardrails",
+    "timestamp": "2026-01-07T04:00:26.158Z",
+    "agentParams": "default"
+  },
+  "data": {
+    "passed": true,
+    "issues": [],
+    "selected_creative": {
+      "id": "5",
+      "headline": "VALUE / PRICE-ANCHORED",
+      "body": "Scene: A comparison shopping scenario, where our persona is researching and comparing different headsets for their needs, focusing on value for money. Role: Offering premium features at an accessible price point.",
+      "cta": "View Strategy",
+      "visualDescription": "A minimalist, well-lit room with several headsets on a table, the NeuralLink Pro prominently displayed with key features highlighted",
+      "platform": "Multi-Channel",
+      "rationale": "Targeting The Modern Consumer via Smart decision-making and satisfaction angle.",
+      "raw_prompt": {
+        "id": "5",
+        "strategy_name": "Value / price-anchored",
+        "target_persona": "The Modern Consumer",
+        "persona_usage_context": "A comparison shopping scenario, where our persona is researching and comparing different headsets for their needs, focusing on value for money",
+        "product_role": "Offering premium features at an accessible price point",
+        "feature_focus": "Advanced technology and durability",
+        "emotional_angle": "Smart decision-making and satisfaction",
+        "visual_framing": "A minimalist, well-lit room with several headsets on a table, the NeuralLink Pro prominently displayed with key features highlighted",
+        "copy_tone": "Informative and confident",
+        "llm_parameters": {
+          "temperature": 0.5,
+          "style_notes": "Use clean lines, and bold typography to convey value and quality"
+        },
+        "rationale": "Highlighting the value proposition in a direct comparison setting can sway the persona's purchasing decision"
+      },
+      "score": 91.9
+    },
+    "compliance_report": {
+      "overall_score": 98,
+      "checks": [
+        {
+          "name": "Brand Safety Policy",
+          "status": "PASS"
+        },
+        {
+          "name": "Regulatory Compliance (FTC)",
+          "status": "PASS"
+        },
+        {
+          "name": "Tone & Voice Check",
+          "status": "PASS"
+        },
+        {
+          "name": "Visual Integrity",
+          "status": "PASS"
+        }
+      ],
+      "certified_at": "2026-01-07T04:00:26.155Z"
+    }
+  }
+}

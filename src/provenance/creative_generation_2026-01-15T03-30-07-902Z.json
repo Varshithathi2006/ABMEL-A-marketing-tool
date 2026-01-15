@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "nodeId": "creative_generation",
+    "timestamp": "2026-01-15T03:30:07.902Z",
+    "agentParams": "default"
+  },
+  "data": {
+    "variants": [
+      {
+        "id": "1",
+        "headline": "MINDFUL MORNINGS",
+        "body": "Scene: Waking up in a high-tech, futuristic bedroom, surrounded by neon lights and holographic projections",
+        "cta": "View Prompt Details",
+        "visualDescription": "Soft, warm lighting with a slightly tilted camera angle, emphasizing the futuristic elements",
+        "platform": "Omnichannel",
+        "rationale": "NeuralLink Headset is worn on the head, controlling the ambiance and entertainment | Serenity and focus"
+      },
+      {
+        "id": "2",
+        "headline": "SOCIAL SYNAPSE",
+        "body": "Scene: Attending a virtual reality music festival, surrounded by friends and strangers",
+        "cta": "View Prompt Details",
+        "visualDescription": "Vibrant, dynamic lighting with fast-paced camera cuts, capturing the energy of the festival",
+        "platform": "Omnichannel",
+        "rationale": "NeuralLink Headset enables seamless social interactions and immersive entertainment | Excitement and belonging"
+      },
+      {
+        "id": "3",
+        "headline": "LIMITLESS LEARNING",
+        "body": "Scene: Exploring a virtual reality museum, interacting with exhibits and learning about art and history",
+        "cta": "View Prompt Details",
+        "visualDescription": "Soft, natural lighting with a steady camera pan, emphasizing the educational aspects",
+        "platform": "Omnichannel",
+        "rationale": "NeuralLink Headset provides an immersive and interactive learning experience | Curiosity and wonder"
+      },
+      {
+        "id": "4",
+        "headline": "INNOVATION STATION",
+        "body": "Scene: Working in a futuristic laboratory, collaborating with colleagues and creating innovative solutions",
+        "cta": "View Prompt Details",
+        "visualDescription": "Bright, clinical lighting with a bird's-eye view camera angle, emphasizing the scientific aspects",
+        "platform": "Omnichannel",
+        "rationale": "NeuralLink Headset enables cutting-edge research and development | Inspiration and creativity"
+      },
+      {
+        "id": "5",
+        "headline": "NEURONIRVANA",
+        "body": "Scene: Practicing meditation and mindfulness in a peaceful, virtual environment",
+        "cta": "View Prompt Details",
+        "visualDescription": "Soft, ethereal lighting with a slow, zooming camera motion, emphasizing the meditative state",
+        "platform": "Omnichannel",
+        "rationale": "NeuralLink Headset provides a deep sense of relaxation and mental clarity | Tranquility and self-awareness"
+      }
+    ]
+  }
+}

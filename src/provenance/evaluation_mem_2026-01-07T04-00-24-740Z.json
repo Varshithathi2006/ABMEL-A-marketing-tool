@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "nodeId": "evaluation_mem",
+    "timestamp": "2026-01-07T04:00:24.740Z",
+    "agentParams": "default"
+  },
+  "data": {
+    "mem_scores": {
+      "1": 95,
+      "2": 79,
+      "3": 77,
+      "4": 78,
+      "5": 91
+    }
+  }
+}

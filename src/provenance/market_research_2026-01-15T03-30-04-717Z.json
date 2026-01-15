@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "nodeId": "market_research",
+    "timestamp": "2026-01-15T03:30:04.718Z",
+    "agentParams": "default"
+  },
+  "data": {
+    "marketSummary": "The general_tech market for NeuralLink Headset is currently competitive. Key players focus on Innovation.",
+    "industry": "general_tech",
+    "keyOpportunities": [
+      "Niche feature focus",
+      "Design aesthetics",
+      "Customer support excellence"
+    ],
+    "keyRisks": [
+      "Commoditization",
+      "Spec wars",
+      "Design copycats"
+    ],
+    "recommendedPositioning": "The Premium Choice",
+    "suggestedMessagingAngles": [
+      "Performance Leader",
+      "Design Focused",
+      "User Experience"
+    ]
+  }
+}

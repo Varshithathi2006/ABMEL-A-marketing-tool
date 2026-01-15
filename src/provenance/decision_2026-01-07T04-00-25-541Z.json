@@ -1,0 +1,63 @@
+{
+  "meta": {
+    "nodeId": "decision",
+    "timestamp": "2026-01-07T04:00:25.542Z",
+    "agentParams": "default"
+  },
+  "data": {
+    "selected_creative": {
+      "id": "5",
+      "headline": "VALUE / PRICE-ANCHORED",
+      "body": "Scene: A comparison shopping scenario, where our persona is researching and comparing different headsets for their needs, focusing on value for money. Role: Offering premium features at an accessible price point.",
+      "cta": "View Strategy",
+      "visualDescription": "A minimalist, well-lit room with several headsets on a table, the NeuralLink Pro prominently displayed with key features highlighted",
+      "platform": "Multi-Channel",
+      "rationale": "Targeting The Modern Consumer via Smart decision-making and satisfaction angle.",
+      "raw_prompt": {
+        "id": "5",
+        "strategy_name": "Value / price-anchored",
+        "target_persona": "The Modern Consumer",
+        "persona_usage_context": "A comparison shopping scenario, where our persona is researching and comparing different headsets for their needs, focusing on value for money",
+        "product_role": "Offering premium features at an accessible price point",
+        "feature_focus": "Advanced technology and durability",
+        "emotional_angle": "Smart decision-making and satisfaction",
+        "visual_framing": "A minimalist, well-lit room with several headsets on a table, the NeuralLink Pro prominently displayed with key features highlighted",
+        "copy_tone": "Informative and confident",
+        "llm_parameters": {
+          "temperature": 0.5,
+          "style_notes": "Use clean lines, and bold typography to convey value and quality"
+        },
+        "rationale": "Highlighting the value proposition in a direct comparison setting can sway the persona's purchasing decision"
+      },
+      "score": 91.9
+    },
+    "recommendedVariant": "5",
+    "ranking": [
+      "5",
+      "4",
+      "2",
+      "1",
+      "3"
+    ],
+    "reasoning": {
+      "summary": "Variant \"VALUE / PRICE-ANCHORED\" was selected as the winner with a weighted score of 91.9/100. It performed strongest in Brand Alignment. It outperformed the runner-up (Variant 4) by 3.7 points.",
+      "metrics_breakdown": [
+        {
+          "name": "CTR Prediction",
+          "weight": "50%",
+          "score": 92
+        },
+        {
+          "name": "Memorability",
+          "weight": "30%",
+          "score": 91
+        },
+        {
+          "name": "Brand Check",
+          "weight": "20%",
+          "score": 93
+        }
+      ]
+    }
+  }
+}

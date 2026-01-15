@@ -1,0 +1,55 @@
+{
+  "meta": {
+    "nodeId": "persona_modeling",
+    "timestamp": "2026-01-07T04:00:20.915Z",
+    "agentParams": "default"
+  },
+  "data": {
+    "personas": {
+      "primaryPersona": {
+        "id": "p_gen_1",
+        "name": "The Modern Consumer",
+        "descriptor": "Value-driven shopper",
+        "motivations": [
+          "Quality",
+          "Convenience",
+          "Social Proof"
+        ],
+        "painPoints": [
+          "Wasted money",
+          "Poor service",
+          "Obsolescence"
+        ],
+        "behavioralTraits": {
+          "attentionSpan": "Medium",
+          "purchaseMindset": "considered",
+          "contentPreference": [
+            "Reviews",
+            "Comparison Videos"
+          ]
+        },
+        "preferredPlatforms": [
+          "Facebook",
+          "Instagram",
+          "Search"
+        ],
+        "creativeConstraints": {
+          "tone": "Helpful, Clear, Friendly",
+          "visualStyle": "Product-hero, Lifestyle context",
+          "copyDo": [
+            "Focus on benefits",
+            "Use social proof",
+            "Clear CTA"
+          ],
+          "copyDont": [
+            "Be vague",
+            "Hide pricing"
+          ]
+        }
+      },
+      "secondaryPersonas": [],
+      "rationale": "Selected The Modern Consumer based on general_tech industry signals."
+    },
+    "personaRationale": "Selected The Modern Consumer based on general_tech industry signals."
+  }
+}

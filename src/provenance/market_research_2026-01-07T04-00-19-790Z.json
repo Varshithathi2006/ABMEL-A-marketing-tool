@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "nodeId": "market_research",
+    "timestamp": "2026-01-07T04:00:19.790Z",
+    "agentParams": "default"
+  },
+  "data": {
+    "marketSummary": "The general_tech market for NeuralLink Pro Headset is currently competitive. Key players focus on Innovation and Performance.",
+    "industry": "general_tech",
+    "competitiveLandscape": {
+      "maturity": "competitive",
+      "competitors": [],
+      "dominantNarratives": [
+        "Innovation",
+        "Performance",
+        "Design"
+      ]
+    },
+    "keyOpportunities": [
+      "Niche feature focus",
+      "Design aesthetics",
+      "Customer support excellence"
+    ],
+    "keyRisks": [
+      "Commoditization",
+      "Spec wars",
+      "Design copycats"
+    ],
+    "recommendedPositioning": "The Premium Choice",
+    "suggestedMessagingAngles": [
+      "Performance Leader",
+      "Design Focused",
+      "User Experience"
+    ]
+  }
+}
