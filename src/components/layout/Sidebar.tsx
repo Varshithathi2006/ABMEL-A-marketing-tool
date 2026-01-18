@@ -3,89 +3,119 @@ import { Home, PlayCircle, BarChart2, Settings, ShieldCheck, Box } from 'lucide-
 import { useNavigationStore } from '../../store/useNavigationStore';
 import clsx from 'clsx';
 
-export const Sidebar = () => {
+import { AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
+
+interface SidebarProps {
+    isOpen?: boolean;
+    onClose?: () => void;
+}
+
+export const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
     const { currentView, setView } = useNavigationStore();
 
     return (
-        <aside className="w-64 h-screen fixed left-0 top-0 flex flex-col z-50 border-r border-white/5 bg-navy-950/50 backdrop-blur-xl">
-            {/* Brand Header */}
-            <div className="p-6 border-b border-white/5 bg-white/5">
-                <div className="flex items-center gap-3">
+        <>
+            {/* Mobile Overlay */}
+            <AnimatePresence>
+                {isOpen && (
                     <motion.div
-                        whileHover={{ rotate: 180 }}
-                        transition={{ duration: 0.5 }}
-                        className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20"
-                    >
-                        <Box className="w-6 h-6 text-white" />
-                    </motion.div>
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm md:hidden"
+                    />
+                )}
+            </AnimatePresence>
+
+            <aside className={clsx(
+                "w-64 h-screen fixed left-0 top-0 flex flex-col z-50 border-r border-white/5 bg-navy-950/95 backdrop-blur-xl transition-transform duration-300 md:translate-x-0",
+                isOpen ? "translate-x-0" : "-translate-x-full"
+            )}>
+                {/* Brand Header */}
+                <div className="p-6 border-b border-white/5 bg-white/5 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <motion.div
+                            whileHover={{ rotate: 180 }}
+                            transition={{ duration: 0.5 }}
+                            className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20"
+                        >
+                            <Box className="w-6 h-6 text-white" />
+                        </motion.div>
+                        <div>
+                            <h1 className="font-display font-bold text-xl tracking-tight text-white leading-none">ABMEL</h1>
+                            <p className="text-[10px] text-cyan-400 font-medium uppercase tracking-wider mt-1.5 opacity-80">Enterprise AI</p>
+                        </div>
+                    </div>
+                    {/* Mobile Close Button */}
+                    <button onClick={onClose} className="md:hidden text-slate-400 hover:text-white transition-colors">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                {/* Navigation */}
+                <nav className="flex-1 p-4 space-y-8 overflow-y-auto">
                     <div>
-                        <h1 className="font-display font-bold text-xl tracking-tight text-white leading-none">ABMEL</h1>
-                        <p className="text-[10px] text-cyan-400 font-medium uppercase tracking-wider mt-1.5 opacity-80">Enterprise AI</p>
+                        <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 font-display">Core Platform</p>
+                        <div className="space-y-1">
+                            <NavItem
+                                icon={<Home size={20} />}
+                                label="Dashboard"
+                                active={currentView === 'dashboard'}
+                                onClick={() => { setView('dashboard'); onClose?.(); }}
+                            />
+                            <NavItem
+                                icon={<PlayCircle size={20} />}
+                                label="Active Campaigns"
+                                active={currentView === 'campaigns'}
+                                onClick={() => { setView('campaigns'); onClose?.(); }}
+                            />
+                            <NavItem
+                                icon={<BarChart2 size={20} />}
+                                label="Performance"
+                                active={currentView === 'performance'}
+                                onClick={() => { setView('performance'); onClose?.(); }}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 font-display">Governance</p>
+                        <div className="space-y-1">
+                            <NavItem
+                                icon={<ShieldCheck size={20} />}
+                                label="Guardrails & Safety"
+                                active={currentView === 'guardrails'}
+                                onClick={() => { setView('guardrails'); onClose?.(); }}
+                            />
+                            <NavItem
+                                icon={<Settings size={20} />}
+                                label="System Settings"
+                                active={currentView === 'settings'}
+                                onClick={() => { setView('settings'); onClose?.(); }}
+                            />
+                        </div>
+                    </div>
+                </nav>
+
+                {/* System Status Footer */}
+                <div className="p-5 border-t border-white/5 bg-black/20">
+                    <div className="flex items-center justify-between mb-3">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-display">System Status</span>
+                        <span className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
+                            <span className="text-[10px] font-bold text-emerald-400 tracking-wide">ONLINE</span>
+                        </span>
+                    </div>
+
+                    <div className="space-y-3">
+                        <StatusMetric label="Neural Engine" value={12} color="bg-cyan-400" />
+                        <StatusMetric label="Memory Usage" value={35} color="bg-blue-500" />
                     </div>
                 </div>
-            </div>
-
-            {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-8 overflow-y-auto">
-                <div>
-                    <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 font-display">Core Platform</p>
-                    <div className="space-y-1">
-                        <NavItem
-                            icon={<Home size={20} />}
-                            label="Dashboard"
-                            active={currentView === 'dashboard'}
-                            onClick={() => setView('dashboard')}
-                        />
-                        <NavItem
-                            icon={<PlayCircle size={20} />}
-                            label="Active Campaigns"
-                            active={currentView === 'campaigns'}
-                            onClick={() => setView('campaigns')}
-                        />
-                        <NavItem
-                            icon={<BarChart2 size={20} />}
-                            label="Performance"
-                            active={currentView === 'performance'}
-                            onClick={() => setView('performance')}
-                        />
-                    </div>
-                </div>
-
-                <div>
-                    <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 font-display">Governance</p>
-                    <div className="space-y-1">
-                        <NavItem
-                            icon={<ShieldCheck size={20} />}
-                            label="Guardrails & Safety"
-                            active={currentView === 'guardrails'}
-                            onClick={() => setView('guardrails')}
-                        />
-                        <NavItem
-                            icon={<Settings size={20} />}
-                            label="System Settings"
-                            active={currentView === 'settings'}
-                            onClick={() => setView('settings')}
-                        />
-                    </div>
-                </div>
-            </nav>
-
-            {/* System Status Footer */}
-            <div className="p-5 border-t border-white/5 bg-black/20">
-                <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-display">System Status</span>
-                    <span className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
-                        <span className="text-[10px] font-bold text-emerald-400 tracking-wide">ONLINE</span>
-                    </span>
-                </div>
-
-                <div className="space-y-3">
-                    <StatusMetric label="Neural Engine" value={12} color="bg-cyan-400" />
-                    <StatusMetric label="Memory Usage" value={35} color="bg-blue-500" />
-                </div>
-            </div>
-        </aside>
+            </aside>
+        </>
     );
 };
 

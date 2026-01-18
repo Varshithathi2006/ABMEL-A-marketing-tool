@@ -96,7 +96,7 @@ export const Dashboard = () => {
                         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                         Recent Activity
                     </h3>
-                    <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                    <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden overflow-x-auto">
                         <table className="w-full text-left text-sm">
                             <thead className="bg-slate-950/50 text-slate-400 uppercase tracking-wider text-xs font-bold">
                                 <tr>

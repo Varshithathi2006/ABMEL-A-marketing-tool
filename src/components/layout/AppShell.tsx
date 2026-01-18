@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
-import { Bell, HelpCircle, Search, User, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { Bell, HelpCircle, Search, User, LogOut, Settings, ChevronDown, Menu } from 'lucide-react';
 import { useNavigationStore } from '../../store/useNavigationStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,32 +8,42 @@ import clsx from 'clsx';
 
 export const AppShell = ({ children }: { children: React.ReactNode }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { setView } = useNavigationStore();
     const { user, signOut } = useAuthStore();
 
     return (
         <div className="min-h-screen bg-transparent flex overflow-hidden">
-            <Sidebar />
+            <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
-            <main className="flex-1 ml-64 min-w-0 flex flex-col h-screen relative z-10">
+            <main className="flex-1 md:ml-64 ml-0 min-w-0 flex flex-col h-screen relative z-10 transition-all duration-300">
                 {/* Executive Top Bar */}
-                <header className="h-20 px-8 flex items-center justify-between z-40 bg-transparent backdrop-blur-sm sticky top-0">
+                <header className="h-20 px-4 md:px-8 flex items-center justify-between z-40 bg-transparent backdrop-blur-sm sticky top-0">
 
                     {/* Breadcrumbs / Context */}
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center gap-3"
-                    >
-                        <div className="flex items-center text-sm font-medium">
-                            <span className="text-slate-400 hover:text-slate-200 cursor-pointer transition-colors">Campaigns</span>
-                            <span className="mx-3 text-slate-600">/</span>
-                            <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-cyan-300 text-xs tracking-wide shadow-[0_0_15px_rgba(6,182,212,0.1)]">
-                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-                                Q1 Product Launch
-                            </span>
-                        </div>
-                    </motion.div>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsMobileMenuOpen(true)}
+                            className="md:hidden p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                        >
+                            <Menu size={20} />
+                        </button>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-center gap-3"
+                        >
+                            <div className="flex items-center text-sm font-medium">
+                                <span className="text-slate-400 hover:text-slate-200 cursor-pointer transition-colors hidden sm:block">Campaigns</span>
+                                <span className="mx-3 text-slate-600 hidden sm:block">/</span>
+                                <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-cyan-300 text-xs tracking-wide shadow-[0_0_15px_rgba(6,182,212,0.1)]">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                                    <span className="truncate max-w-[150px] sm:max-w-none">Q1 Product Launch</span>
+                                </span>
+                            </div>
+                        </motion.div>
+                    </div>
 
                     {/* Right Actions */}
                     <div className="flex items-center gap-6">
