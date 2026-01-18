@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingBag, Users, Target, Check, DollarSign } from 'lucide-react';
+import { ShoppingBag, Users, Target, Check, IndianRupee } from 'lucide-react';
 import clsx from 'clsx';
 import { TiltCard } from '../../ui/TiltCard';
 
@@ -105,13 +105,13 @@ export const ProductDetailsWidget = ({ onComplete }: { onComplete: (data: any) =
 
                             {/* Price */}
                             <div className="group">
-                                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider ml-1 group-focus-within:text-cyan-400 transition-colors">Price Point</label>
+                                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider ml-1 group-focus-within:text-cyan-400 transition-colors">Price Point (INR)</label>
                                 <div className="relative transform transition-transform duration-300 group-focus-within:scale-[1.01]">
-                                    <DollarSign className="absolute left-4 top-4 w-5 h-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
+                                    <IndianRupee className="absolute left-4 top-4 w-5 h-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
                                     <input
                                         type="number"
                                         className="w-full pl-12 pr-4 py-4 glass-input font-medium"
-                                        placeholder="0.00"
+                                        placeholder="₹ 0.00"
                                         value={data.price}
                                         onChange={e => setData({ ...data, price: e.target.value })}
                                     />
@@ -170,37 +170,7 @@ export const ProductDetailsWidget = ({ onComplete }: { onComplete: (data: any) =
                         <div className="w-full h-[1px] bg-white/5 my-4"></div>
 
                         {/* Brand Guidelines Upload */}
-                        <div className="group">
-                            <div className="flex justify-between items-center mb-2">
-                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider ml-1 group-focus-within:text-cyan-400 transition-colors">
-                                    Brand Guidelines (Optional)
-                                </label>
-                                {data.file && (
-                                    <span className="text-xs text-green-400 flex items-center gap-1">
-                                        <Check size={12} /> {data.file.name}
-                                    </span>
-                                )}
-                            </div>
-                            <div className="relative group-focus-within:scale-[1.01] transition-transform">
-                                <input
-                                    type="file"
-                                    accept=".txt,.md,.pdf"
-                                    onChange={(e) => {
-                                        if (e.target.files?.[0]) {
-                                            setData({ ...data, file: e.target.files[0] });
-                                        }
-                                    }}
-                                    className="block w-full text-sm text-slate-500
-                                      file:mr-4 file:py-2.5 file:px-4
-                                      file:rounded-xl file:border-0
-                                      file:text-xs file:font-bold
-                                      file:bg-cyan-500/10 file:text-cyan-400
-                                      hover:file:bg-cyan-500/20
-                                      cursor-pointer glass-input rounded-xl
-                                    "
-                                />
-                            </div>
-                        </div>
+
                     </div>
                 </div>
             </TiltCard>

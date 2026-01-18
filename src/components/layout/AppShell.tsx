@@ -5,15 +5,21 @@ import { useNavigationStore } from '../../store/useNavigationStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
+import { Notifications } from '../ui/Notifications';
+import { HelpModal } from '../ui/HelpModal';
 
 export const AppShell = ({ children }: { children: React.ReactNode }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
     const { setView } = useNavigationStore();
     const { user, signOut } = useAuthStore();
 
     return (
         <div className="min-h-screen bg-transparent flex overflow-hidden">
+            <Notifications /> {/* Toast Container */}
+            <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+
             <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
             <main className="flex-1 md:ml-64 ml-0 min-w-0 flex flex-col h-screen relative z-10 transition-all duration-300">
@@ -65,7 +71,10 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
                             <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-navy-950 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span>
                         </button>
 
-                        <button className="p-2.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all hover:scale-105 active:scale-95">
+                        <button
+                            onClick={() => setIsHelpOpen(true)}
+                            className="p-2.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all hover:scale-105 active:scale-95"
+                        >
                             <HelpCircle size={20} />
                         </button>
 

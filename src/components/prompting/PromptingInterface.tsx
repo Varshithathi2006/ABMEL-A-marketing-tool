@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import { useCampaignStore } from '../../store/useCampaignStore';
 
 // Widgets
-// import { BrandGuidelinesWidget } from './widgets/BrandGuidelinesWidget';
+import { BrandGuidelinesWidget } from './widgets/BrandGuidelinesWidget';
 import { ProductDetailsWidget } from './widgets/ProductDetailsWidget';
 
 interface Message {
@@ -31,7 +31,7 @@ export const PromptingInterface = () => {
         hasInitialized.current = true;
 
         setTimeout(() => {
-            addSystemMessage("Welcome to the ABMEL Command Center. \n\nI am your autonomous agentic partner. To begin constructing your campaign execution graph, click below to initialize the configuration matrix.", "welcome");
+            addSystemMessage("Welcome to the ABMEL Command Center. \n\nI am your autonomous agentic partner. To begin, please provide any specific brand guidelines or constraints.", "welcome");
 
             setTimeout(() => {
                 addComponentMessage(
@@ -39,12 +39,12 @@ export const PromptingInterface = () => {
                         <button
                             onClick={() => {
                                 setIsWidgetActive(true);
-                                addSystemMessage("Initializing Product Configuration Matrix...", "init-config");
+                                addSystemMessage("Initializing Context Ingestion Protocol...", "init-brand");
                                 setTimeout(() => {
-                                    addComponentMessage(<ProductDetailsWidget onComplete={handleProductComplete} />, "product-widget");
+                                    addComponentMessage(<BrandGuidelinesWidget onComplete={handleBrandComplete} />, "brand-widget");
                                 }, 500);
                             }}
-                            className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl flex items-center gap-2 shadow-lg shadow-blue-500/20 transition-all"
+                            className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-6 rounded-xl flex items-center gap-2 shadow-lg shadow-purple-500/20 transition-all"
                         >
                             <Sparkles size={18} className="fill-current" />
                             Initialize Campaign
@@ -75,19 +75,21 @@ export const PromptingInterface = () => {
         setMessages(prev => [...prev, { id, type: 'user', content: text }]);
     };
 
-    /*
     const handleBrandComplete = (data: any) => {
-        setInput({ brandGuidelines: data.text });
-        handleUserResponse("Brand guidelines uploaded successfully.");
+        if (!data.skipped) {
+            setInput({ brandGuidelines: data.text }); // Real persistent store update
+        }
+
+        handleUserResponse(data.skipped ? "Skipped brand context upload." : `Uploaded guidelines: ${data.fileName}`);
 
         setTimeout(() => {
-            addSystemMessage("Excellent. The neural context has been updated with your brand constraints.\n\nNow, let's define the campaign parameters.", "product-intro");
+            // setIsWidgetActive(false); // Briefly show chat? No, keep focus.
+            addSystemMessage("Neural context updated. \n\nNow, let's define the campaign constraints.", "product-intro");
             setTimeout(() => {
                 addComponentMessage(<ProductDetailsWidget onComplete={handleProductComplete} />, "product-widget");
             }, 800);
         }, 1000);
     };
-    */
 
     const handleProductComplete = (data: any) => {
         setIsWidgetActive(false); // SHOW INPUT BACK
@@ -102,11 +104,21 @@ export const PromptingInterface = () => {
                 addComponentMessage(
                     <div className="flex justify-start">
                         <button
-                            onClick={(e) => {
+                            onClick={async (e) => {
+                                console.log('[UI] "Initiate Planning Phase" clicked');
                                 const btn = e.currentTarget;
                                 btn.disabled = true;
                                 btn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Connecting to Agent Hive...';
-                                planCampaign();
+
+                                try {
+                                    console.log('[UI] Calling planCampaign()...');
+                                    await planCampaign();
+                                    console.log('[UI] planCampaign returned successfully');
+                                } catch (err) {
+                                    console.error('[UI] Error calling planCampaign:', err);
+                                    btn.innerHTML = 'Error - Try Again';
+                                    btn.disabled = false;
+                                }
                             }}
                             className="bg-green-500 hover:bg-green-400 text-white font-bold py-3 px-8 rounded-xl flex items-center gap-2 shadow-lg shadow-green-500/20 transition-all transform hover:scale-105 hover:rotate-1 disabled:opacity-70 disabled:cursor-wait"
                         >

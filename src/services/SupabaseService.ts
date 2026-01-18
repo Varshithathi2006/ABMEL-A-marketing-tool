@@ -131,4 +131,28 @@ export class SupabaseService {
 
         if (error) console.error('Failed to save creative variant', error);
     }
+
+    // --- DRAFTS ---
+    public async saveDraft(userId: string, input: any) {
+        const { error } = await supabase
+            .from('user_drafts')
+            .upsert({
+                user_id: userId,
+                draft_data: input,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+
+        if (error) throw new Error(`Draft Save Error: ${error.message}`);
+    }
+
+    public async getDraft(userId: string): Promise<any | null> {
+        const { data, error } = await supabase
+            .from('user_drafts')
+            .select('draft_data')
+            .eq('user_id', userId)
+            .single();
+
+        if (error) return null;
+        return data.draft_data;
+    }
 }

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { AgentOrchestrator } from '../services/AgentOrchestrator';
 import { SupabaseService } from '../services/SupabaseService';
 import { useAuthStore } from './useAuthStore';
+import { useNotificationStore } from './useNotificationStore';
 import type { CampaignInput } from '../types/abmel';
 import type { TaskGraph, GraphEvent } from '../types/graph';
 
@@ -22,6 +23,7 @@ interface CampaignState {
 
     // Actions
     fetchCampaigns: (userId: string) => Promise<void>;
+    restoreDraft: (userId: string) => Promise<void>;
     planCampaign: () => Promise<void>;
     executeCampaign: () => void;
     saveCampaign: () => Promise<void>;
@@ -98,6 +100,12 @@ export const useCampaignStore = create<CampaignState>((set, get) => {
                 set({ status: 'completed' });
             }
 
+            useNotificationStore.getState().addNotification({
+                type: 'success',
+                title: 'Campaign Optimized',
+                message: 'All agents have completed their tasks. Review the final decision.'
+            });
+
         } else if (event.type === 'node_reset') {
             get().addLog(`[${event.timestamp}] Resetting task: ${event.nodeId}`);
             if (graph && event.nodeId) {
@@ -129,7 +137,30 @@ export const useCampaignStore = create<CampaignState>((set, get) => {
         logs: [],
         campaigns: [],
 
-        setInput: (updates) => set((state) => ({ input: { ...state.input, ...updates } })),
+        setInput: (updates) => {
+            set((state) => {
+                const newInput = { ...state.input, ...updates };
+                // Debounced save to draft (pseudo-impl)
+                const userId = useAuthStore.getState().user?.id;
+                if (userId) {
+                    // In a real app we'd debounce this call
+                    SupabaseService.getInstance().saveDraft(userId, newInput).catch(console.warn);
+                }
+                return { input: newInput };
+            });
+        },
+
+        restoreDraft: async (userId: string) => {
+            try {
+                const draft = await SupabaseService.getInstance().getDraft(userId);
+                if (draft) {
+                    set({ input: { ...get().input, ...draft } });
+                    get().addLog('Restored previous campaign configuration from cloud.');
+                }
+            } catch (e) {
+                console.log('No draft found or error restoring', e);
+            }
+        },
 
         fetchCampaigns: async (userId: string) => {
             try {
@@ -177,42 +208,60 @@ export const useCampaignStore = create<CampaignState>((set, get) => {
         }),
 
         planCampaign: async () => {
+            console.log('[Store] planCampaign triggered');
             const { input, orchestrator } = get();
+            console.log('[Store] Input:', input);
 
             // 1. Create Campaign in DB (Real-time persistence)
             let campaignId = 'temp-' + Date.now();
             try {
                 // Fetch userId from Auth Store
                 const userId = useAuthStore.getState().user?.id;
+                console.log('[Store] UserId:', userId);
 
                 if (userId) {
                     campaignId = await SupabaseService.getInstance().createCampaign(userId, input);
                     get().addLog(`[System] Campaign initialized in DB: ${campaignId}`);
                 } else {
                     get().addLog('[System] Warning: No authenticated user. Campaign saved locally only.');
+                    console.warn('[Store] No authenticated user found.');
                 }
             } catch (err) {
                 console.warn("Failed to create campaign in DB", err);
             }
 
+            console.log('[Store] Setting status to running...');
             set({ status: 'running', logs: [], graph: null });
 
             try {
                 // 2. Initialize Orchestrator with campaignId context
+                console.log('[Store] Calling orchestrator.planCampaign...');
                 await orchestrator.planCampaign({
                     ...input,
                     campaignId: campaignId // VITAL: Pass ID for artifact tagging
                 });
 
+                console.log('[Store] Orchestrator planning complete. Setting status to planned.');
                 set({ status: 'planned' });
                 get().addLog('Campaign execution plan generated. Initiating execution sequence...');
 
                 // Auto-execute for seamless tailored experience
+                console.log('[Store] Auto-executing campaign...');
+                useNotificationStore.getState().addNotification({
+                    type: 'success',
+                    title: 'Execution Plan Ready',
+                    message: 'Campaign strategy has been generated. Agents are now executing tasks.'
+                });
                 get().executeCampaign();
             } catch (error) {
-                console.error(error);
+                console.error('[Store] Error during planning:', error);
                 get().addLog(`Error during planning: ${error}`);
                 set({ status: 'idle' });
+                useNotificationStore.getState().addNotification({
+                    type: 'error',
+                    title: 'Planning Failed',
+                    message: 'Could not generate campaign plan. Please try again.'
+                });
             }
         },
 

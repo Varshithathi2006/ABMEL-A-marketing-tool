@@ -63,7 +63,7 @@ export const AgentExecutionView = () => {
                         <div key={idx} className="relative w-full flex justify-center">
                             <div className="flex items-center justify-center gap-4 flex-wrap max-w-2xl px-4">
                                 {layer.map(nodeId => {
-                                    const node = graph.nodes[nodeId];
+                                    const node = graph.nodes?.[nodeId];
                                     if (!node) return null;
                                     return <NodeCard key={nodeId} node={node} />;
                                 })}

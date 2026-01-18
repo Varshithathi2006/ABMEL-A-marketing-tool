@@ -101,21 +101,39 @@ export const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
 
                 {/* System Status Footer */}
                 <div className="p-5 border-t border-white/5 bg-black/20">
-                    <div className="flex items-center justify-between mb-3">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-display">System Status</span>
-                        <span className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
-                            <span className="text-[10px] font-bold text-emerald-400 tracking-wide">ONLINE</span>
-                        </span>
-                    </div>
-
-                    <div className="space-y-3">
-                        <StatusMetric label="Neural Engine" value={12} color="bg-cyan-400" />
-                        <StatusMetric label="Memory Usage" value={35} color="bg-blue-500" />
-                    </div>
+                    <SystemStatusPanel />
                 </div>
             </aside>
         </>
+    );
+};
+
+// Extracted for cleaner component
+import { useSystemHealth } from '../../hooks/useSystemHealth';
+
+const SystemStatusPanel = () => {
+    const health = useSystemHealth();
+    const isOnline = health.status === 'ONLINE';
+
+    return (
+        <div className="space-y-3">
+            <div className="flex items-center justify-between mb-3">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-display">System Status</span>
+                <span className={clsx("flex items-center gap-2 px-2.5 py-1 rounded-full border",
+                    isOnline ? "bg-emerald-500/10 border-emerald-500/20" : "bg-red-500/10 border-red-500/20"
+                )}>
+                    <div className={clsx("w-1.5 h-1.5 rounded-full animate-pulse",
+                        isOnline ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"
+                    )}></div>
+                    <span className={clsx("text-[10px] font-bold tracking-wide",
+                        isOnline ? "text-emerald-400" : "text-red-400"
+                    )}>{health.status}</span>
+                </span>
+            </div>
+
+            <StatusMetric label="Neural Engine" value={health.aiStatus === 'Operational' ? 100 : 60} color="bg-cyan-400" displayValue={health.aiStatus} />
+            <StatusMetric label="DB Latency" value={Math.min(100, (health.dbLatency / 200) * 100)} color="bg-blue-500" displayValue={`${health.dbLatency}ms`} />
+        </div>
     );
 };
 
@@ -146,13 +164,13 @@ const NavItem = ({ icon, label, active = false, onClick }: { icon: any, label: s
     </motion.button>
 );
 
-const StatusMetric = ({ label, value, color }: { label: string, value: number, color: string }) => (
+const StatusMetric = ({ label, value, color, displayValue }: { label: string, value: number, color: string, displayValue?: string }) => (
     <div>
         <div className="flex justify-between text-[11px] text-slate-500 mb-1">
             <span>{label}</span>
-            <span className="text-slate-300 font-mono">{value}%</span>
+            <span className="text-slate-300 font-mono">{displayValue || `${value}%`}</span>
         </div>
-        <div className="w-full bg-slate-800/50 h-1 rounded-full overflow-hidden">
+        <div className="w-full bg-slate-800/50 h-1.5 rounded-full overflow-hidden">
             <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${value}%` }}

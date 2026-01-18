@@ -94,11 +94,26 @@ export const SignupPage = () => {
                                     type="password"
                                     required
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                        // Real-time validation
+                                        if (e.target.value.length < 8) setError("Key must be at least 8 chars");
+                                        else if (!/[A-Z]/.test(e.target.value)) setError("Must include uppercase");
+                                        else if (!/[0-9]/.test(e.target.value)) setError("Must include number");
+                                        else setError(null);
+                                    }}
                                     className="w-full pl-11 pr-4 py-3 bg-black/20 border border-white/10 rounded-xl focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 outline-none text-white placeholder:text-slate-600 transition-all shadow-inner group-hover:border-white/20"
                                     placeholder="••••••••"
                                 />
                             </div>
+                            {/* Strength Indicator */}
+                            {password && (
+                                <div className="mt-2 flex gap-1 h-1">
+                                    <div className={clsx("flex-1 rounded-full transition-colors", password.length >= 6 ? "bg-red-500" : "bg-slate-700")}></div>
+                                    <div className={clsx("flex-1 rounded-full transition-colors", (password.length >= 8 && /[A-Z]/.test(password)) ? "bg-yellow-500" : "bg-slate-700")}></div>
+                                    <div className={clsx("flex-1 rounded-full transition-colors", (password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password)) ? "bg-green-500" : "bg-slate-700")}></div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="group">

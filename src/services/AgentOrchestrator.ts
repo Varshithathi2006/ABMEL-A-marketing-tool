@@ -34,7 +34,20 @@ export class AgentOrchestrator {
         this.emit({
             type: 'node_complete',
             nodeId: 'planning',
-            data: { taskGraph: { id: 'lc-plan', steps: ['Market', 'Persona', 'Creative'] } },
+            data: {
+                taskGraph: {
+                    nodes: {
+                        planning: { id: 'planning', agentName: 'PlanningAgent', status: 'completed', dependencies: [], inputContextKeys: [], outputContextKeys: [] },
+                        market_research: { id: 'market_research', agentName: 'MarketResearchAgent', status: 'idle', dependencies: ['planning'], inputContextKeys: [], outputContextKeys: [] },
+                        persona_modeling: { id: 'persona_modeling', agentName: 'PersonaAgent', status: 'idle', dependencies: ['market_research'], inputContextKeys: [], outputContextKeys: [] },
+                        creative_generation: { id: 'creative_generation', agentName: 'CreativeAgent', status: 'idle', dependencies: ['persona_modeling'], inputContextKeys: [], outputContextKeys: [] },
+                        evaluation_ctr: { id: 'evaluation_ctr', agentName: 'CriticAgent', status: 'idle', dependencies: ['creative_generation'], inputContextKeys: [], outputContextKeys: [] },
+                        decision: { id: 'decision', agentName: 'DecisionAgent', status: 'idle', dependencies: ['evaluation_ctr'], inputContextKeys: [], outputContextKeys: [] },
+                        guardrails: { id: 'guardrails', agentName: 'SafetyAgent', status: 'idle', dependencies: ['decision'], inputContextKeys: [], outputContextKeys: [] }
+                    },
+                    context: input
+                }
+            },
             timestamp: new Date().toISOString()
         });
     }
