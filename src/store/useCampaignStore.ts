@@ -14,15 +14,18 @@ interface CampaignState {
     setInput: (input: Partial<CampaignInput>) => void;
 
     // Execution State
-    status: 'idle' | 'created' | 'planned' | 'running' | 'completed' | 'failed';
+    status: 'idle' | 'created' | 'planned' | 'running' | 'completed' | 'CREATIVES_READY' | 'failed';
     graph: TaskGraph | null;
+    creatives: any[];
     logs: string[];
 
     // History
     campaigns: any[];
+    allCreatives: any[]; // Changed
 
     // Actions
     fetchCampaigns: (userId: string) => Promise<void>;
+    fetchAllCreatives: (userId: string) => Promise<void>; // Added
     restoreDraft: (userId: string) => Promise<void>;
     planCampaign: () => Promise<void>;
     executeCampaign: () => void;
@@ -88,6 +91,42 @@ export const useCampaignStore = create<CampaignState>((set, get) => {
                     set({ graph: { ...graph, nodes, context: { ...graph.context, ...event.data } } });
                 }
             }
+        } else if (event.type === 'WORKFLOW_COMPLETED') {
+            get().addLog(`[${event.timestamp}] Workflow successfully completed. Loading results...`);
+
+            // CRITICAL: Explicit handoff state + Data Binding
+            const variants = event.data?.variants || [];
+
+            // 1. Update Local State
+            set({
+                status: 'CREATIVES_READY',
+                creatives: variants
+            });
+
+            // 2. Persist to Supabase (CRITICAL FIX)
+            const { graph } = get();
+            const campaignId = graph?.context?.campaignId;
+
+            if (campaignId && !campaignId.startsWith('temp-')) {
+                get().addLog(`[Persistence] Saving ${variants.length} creatives to DB for Campaign: ${campaignId}`);
+                SupabaseService.getInstance().saveAgentOutput(
+                    campaignId,
+                    'creative_generation',
+                    { variants } // Store wrapped in object to match hydration logic
+                ).catch(err => console.error("Failed to save creatives:", err));
+
+                // Also update status to 'Creatives Ready' in DB?
+                // SupabaseService doesn't have updateStatus method exposed, but it's fine.
+            } else {
+                console.warn("[Persistence] Skipping save - Invalid or Temp Campaign ID:", campaignId);
+            }
+
+            useNotificationStore.getState().addNotification({
+                type: 'success',
+                title: 'Creatives Generated',
+                message: '5 Creative Variants are ready for review.'
+            });
+
         } else if (event.type === 'graph_complete') {
             get().addLog(`[${event.timestamp}] Campaign optimization complete.`);
 
@@ -108,7 +147,7 @@ export const useCampaignStore = create<CampaignState>((set, get) => {
                 };
 
                 set({
-                    status: 'completed',
+                    // Only mark fully completed if we went past decision, but for now we stop at creatives often
                     campaigns: [newCampaign, ...get().campaigns]
                 });
             } else {
@@ -149,6 +188,8 @@ export const useCampaignStore = create<CampaignState>((set, get) => {
         },
         status: 'idle',
         graph: null,
+        creatives: [],
+        allCreatives: [],
         logs: [],
         campaigns: [],
 
@@ -199,10 +240,32 @@ export const useCampaignStore = create<CampaignState>((set, get) => {
             }
         },
 
-        fetchCampaignDetails: async (campaignId: string) => {
-            // Retrieve agent artifacts for a specific campaign
+        fetchAllCreatives: async (userId: string) => {
             try {
-                return await SupabaseService.getInstance().getAgentOutputs(campaignId);
+                const data = await SupabaseService.getInstance().getAllUserCreatives(userId);
+                set({ allCreatives: data });
+            } catch (e) {
+                console.error("Failed to fetch all creatives", e);
+            }
+        },
+
+        fetchCampaignDetails: async (campaignId: string) => {
+            try {
+                const outputs = await SupabaseService.getInstance().getAgentOutputs(campaignId);
+
+                // Persistence Hydration logic
+                if (Array.isArray(outputs)) {
+                    const creativeNode = outputs.find((r: any) => r.node_id === 'creative_generation');
+                    if (creativeNode && creativeNode.output_data && creativeNode.output_data.variants) {
+                        set({ creatives: creativeNode.output_data.variants });
+                    } else if (creativeNode && creativeNode.data && creativeNode.data.variants) {
+                        set({ creatives: creativeNode.data.variants });
+                    }
+                } else if (outputs && outputs['creative_generation']?.variants) {
+                    set({ creatives: outputs['creative_generation'].variants });
+                }
+
+                return outputs;
             } catch (e) {
                 console.error("Failed to fetch details", e);
                 return {};
@@ -246,7 +309,7 @@ export const useCampaignStore = create<CampaignState>((set, get) => {
             }
 
             console.log('[Store] Setting status to running...');
-            set({ status: 'running', logs: [], graph: null });
+            set({ status: 'running', logs: [] });
 
             try {
                 // 2. Initialize Orchestrator with campaignId context

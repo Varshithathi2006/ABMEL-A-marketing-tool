@@ -1,18 +1,49 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCampaignStore } from '../store/useCampaignStore';
-import { Loader2, CheckCircle2, Circle, AlertTriangle, FileText, Bot } from 'lucide-react';
+import { Loader2, CheckCircle2, Circle, AlertTriangle, FileText, Bot, ArrowRight } from 'lucide-react';
 import type { TaskNode } from '../types/graph';
 import { motion } from 'framer-motion';
 
 export const AgentExecutionView = () => {
-    const { graph, status, logs } = useCampaignStore();
+    const { graph, status, logs, creatives } = useCampaignStore();
+
+    // --- DEBUG OVERLAY (REMOVE IN PROD) ---
+    const debugOverlay = (
+        <div className="fixed top-20 right-4 p-4 bg-black/90 text-green-400 font-mono text-xs z-50 rounded shadow-2xl border border-green-500/30 opacity-80 hover:opacity-100 transition-opacity">
+            <h3 className="font-bold border-b border-green-500/50 mb-2 pb-1 text-white">DEBUG STATE</h3>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                <span className="text-slate-400">Status:</span>
+                <span className={status === 'CREATIVES_READY' ? 'text-yellow-400 font-bold' : 'text-white'}>{status}</span>
+
+                <span className="text-slate-400">Creatives:</span>
+                <span className={(creatives?.length || 0) === 5 ? 'text-green-400 font-bold' : 'text-red-400'}>{creatives?.length || 0}</span>
+
+                <span className="text-slate-400">Graph Nodes:</span>
+                <span>{graph ? Object.keys(graph.nodes).length : 'null'}</span>
+
+                <span className="text-slate-400">Last Log:</span>
+                <span className="col-span-2 text-slate-500 truncate max-w-[200px]" title={logs[logs.length - 1]}>{logs[logs.length - 1] || 'None'}</span>
+            </div>
+            <button
+                onClick={() => useCampaignStore.setState({ status: 'CREATIVES_READY', creatives: [{ id: '1', headline: 'FORCE MOCK', rationale: 'Debug', platform: 'Debug', body: 'Debug' }] })}
+                className="mt-3 w-full bg-red-900/50 hover:bg-red-700 text-white py-1 px-2 rounded text-[10px]"
+            >
+                FORCE FORCE STATE
+            </button>
+        </div>
+    );
 
     // If data is initializing, show loader
     if (!graph && status === 'running') {
         return (
-            <div className="flex flex-col items-center justify-center h-[60vh] text-slate-400">
-                <Loader2 className="w-12 h-12 animate-spin mb-4 text-blue-500" />
-                <p>Initializing Agents...</p>
-            </div>
+            <>
+                {debugOverlay}
+                <div className="flex flex-col items-center justify-center h-[60vh] text-slate-400">
+                    <Loader2 className="w-12 h-12 animate-spin mb-4 text-blue-500" />
+                    <p>Initializing Agents...</p>
+                </div>
+            </>
         );
     }
 
@@ -37,10 +68,13 @@ export const AgentExecutionView = () => {
 
     // Safety fallback
     if (!graph) return (
-        <div className="flex flex-col items-center justify-center h-[60vh] text-slate-500">
-            <Loader2 className="w-12 h-12 animate-spin mb-4 text-blue-500" />
-            <p>Waiting for State...</p>
-        </div>
+        <>
+            {debugOverlay}
+            <div className="flex flex-col items-center justify-center h-[60vh] text-slate-500">
+                <Loader2 className="w-12 h-12 animate-spin mb-4 text-blue-500" />
+                <p>Waiting for State...</p>
+            </div>
+        </>
     );
 
     // Sort nodes roughly by dependency depth (simplified for visual flow)
@@ -56,8 +90,48 @@ export const AgentExecutionView = () => {
         ['learning']
     ];
 
+    // --------------------------------------------------------------------------------
+    // TERMINAL STATE: CREATIVES READY (Single Source of Truth)
+    // --------------------------------------------------------------------------------
+    // We check creatives.length directly to be resilient against status race conditions
+    // --------------------------------------------------------------------------------
+    // TERMINAL STATE: CREATIVES READY (Navigation Handoff)
+    // --------------------------------------------------------------------------------
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (creatives && creatives.length === 5 && graph?.context?.campaignId) {
+            console.log("Creatives Ready. Navigating to results...");
+            navigate(`/campaigns/${graph.context.campaignId}/creatives`);
+        }
+    }, [creatives, graph, navigate]);
+
+    if ((creatives && creatives.length === 5) || status === 'CREATIVES_READY') {
+        return (
+            <div className="flex flex-col items-center justify-center h-[60vh] text-slate-500 animate-in fade-in">
+                <CheckCircle2 className="w-16 h-16 mb-4 text-green-500" />
+                <h3 className="text-xl font-bold text-slate-800 mb-2">Optimization Complete</h3>
+                <p className="text-slate-500 mb-4">Redirecting to results...</p>
+                <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+
+                {/* Fallback Manual Button as requested (though auto-redirect is primary) */}
+                {/* "The user must see: All 5 creatives immediately" - Wait, user said immediately show creatives on NEW PAGE. 
+                     So this intermediate loading state is fine as long as it's fast. */}
+                {graph?.context?.campaignId && (
+                    <button
+                        onClick={() => navigate(`/campaigns/${graph.context.campaignId}/creatives`)}
+                        className="mt-4 text-xs underline text-slate-400 hover:text-blue-500"
+                    >
+                        Click if not redirected
+                    </button>
+                )}
+            </div>
+        );
+    }
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-8rem)]">
+            {debugOverlay}
             {/* Left Col: Pipeline Visualizer */}
             <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6 overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
@@ -69,7 +143,7 @@ export const AgentExecutionView = () => {
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                         </span>
                     </h2>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-blue-100 text-blue-700`}>
                         {status}
                     </span>
                 </div>
@@ -96,7 +170,7 @@ export const AgentExecutionView = () => {
             {/* Right Col: Live Logs & Output Preview */}
             <div className="flex flex-col gap-6 h-full">
                 {/* Logs Console */}
-                <div className="bg-slate-900 text-slate-300 rounded-xl p-4 font-mono text-xs h-1/2 overflow-y-auto shadow-sm">
+                <div className="bg-slate-900 text-slate-300 rounded-xl p-4 font-mono text-xs h-full overflow-y-auto shadow-sm">
                     <div className="text-slate-500 mb-2 border-b border-slate-800 pb-2">Create_System_Logs</div>
                     <div className="space-y-1">
                         {logs.map((log, i) => (
@@ -110,52 +184,6 @@ export const AgentExecutionView = () => {
                         )}
                     </div>
                 </div>
-
-                {/* Final Output Preview (Simple) */}
-                {/* Final Output Preview (Simple) */}
-                {status === 'completed' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-xl border border-slate-200 shadow-lg flex flex-col h-1/2 overflow-hidden"
-                    >
-                        <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-                            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                                <CheckCircle2 className="text-green-500 w-5 h-5" />
-                                Generated Creatives
-                            </h3>
-                            <button className="text-xs font-bold text-blue-600 hover:underline">Export</button>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                            {/* Extract variants from creative agent result */}
-                            {graph?.nodes['creative_generation']?.result?.variants?.map((variant: any, idx: number) => (
-                                <div key={idx} className="p-3 rounded-lg border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 transition-colors group">
-                                    <div className="flex justify-between items-start mb-1">
-                                        <h4 className="font-bold text-slate-700 text-sm">
-                                            {variant.headline || `Strategy #${idx + 1}`}
-                                        </h4>
-                                        <span className="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wide">
-                                            Variant {idx + 1}
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-slate-500 mb-2 leading-relaxed">
-                                        {variant.rationale || variant.body || "No description available."}
-                                    </p>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded">
-                                            {variant.platform || "Omnichannel"}
-                                        </span>
-                                    </div>
-                                </div>
-                            )) || (
-                                    <div className="text-center py-8 text-slate-400 text-sm">
-                                        No variants found in output data.
-                                    </div>
-                                )}
-                        </div>
-                    </motion.div>
-                )}
             </div>
         </div>
     );
@@ -203,9 +231,9 @@ const NodeCard = ({ node }: { node: TaskNode }) => {
                     <FileText size={10} />
                     <span>Output</span>
                 </div>
-                {/* Heuristic to show relevant data string */}
+                {/* Heuristic to show relevant data string SAFE SUBSTRING */}
                 <div className="truncate">
-                    {(JSON.stringify(Object.values(node.result || {})[0] || "") || "").substring(0, 30)}...
+                    {String(Object.values(node.result || {})[0] || "").substring(0, 30)}...
                 </div>
             </div>
         </motion.div>

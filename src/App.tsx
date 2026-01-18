@@ -5,6 +5,7 @@ import { CampaignsPage } from './pages/CampaignsPage';
 import { PerformancePage } from './pages/PerformancePage';
 import { GuardrailsPage } from './pages/GuardrailsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { CampaignResultsPage } from './pages/CampaignResultsPage';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { LoginPage } from './pages/Auth/LoginPage';
 import { SignupPage } from './pages/Auth/SignupPage';
@@ -48,6 +49,14 @@ function App() {
           element={
             <ProtectedRoute>
               <DashboardView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/campaigns/:id/creatives"
+          element={
+            <ProtectedRoute>
+              <CampaignResultsPage />
             </ProtectedRoute>
           }
         />

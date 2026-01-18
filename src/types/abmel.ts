@@ -22,16 +22,11 @@ export interface CampaignInput {
 
 export interface CreativeVariant {
     id: string;
+    strategy_type: 'FEATURE' | 'EMOTIONAL' | 'SOCIAL_PROOF' | 'PRICE' | 'LIFESTYLE';
     headline: string;
-    body: string;
-    cta: string;
-    visualDescription: string;
+    body_copy: string;
+    visual_prompt: string;
+    tone: string;
     platform: string;
-    rationale: string;
-    imageUrl?: string;
-    scores?: {
-        ctr: number;
-        memorability: number;
-        brandAlignment: number;
-    };
+    is_best_creative?: boolean;
 }

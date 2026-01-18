@@ -5,14 +5,21 @@ export interface DatabaseCampaign {
     id: string;
     product: string;
     target_audience: string;
-    campaign_goal: string;
-    status: string;
+    price: string;
+    campaign_goal: 'AWARENESS' | 'CONVERSIONS' | 'ENGAGEMENT';
+    status: 'PLANNING' | 'PROCESSING' | 'CREATIVES_READY' | 'FAILED';
+    best_creative_id?: string;
 }
 
-export interface DatabaseGuideline {
-    campaign_id: string;
-    extracted_text: string;
-    file_name: string;
+export interface CreativeVariant {
+    id?: string;
+    strategy_type: 'FEATURE' | 'EMOTIONAL' | 'SOCIAL_PROOF' | 'PRICE' | 'LIFESTYLE';
+    headline: string;
+    body_copy: string;
+    visual_prompt: string;
+    tone: string;
+    platform: string;
+    is_best_creative?: boolean;
 }
 
 export class SupabaseService {
@@ -30,24 +37,18 @@ export class SupabaseService {
     // --- CAMPAIGNS ---
     public async createCampaign(userId: string, input: any): Promise<string> {
         // 1. Strict Goal Mapping (UI -> DB Enum)
-        const GOAL_MAP: Record<string, string> = {
-            'awareness': 'Awareness',
-            'brand awareness': 'Awareness',
-            'conversion': 'Conversion',
-            'sales': 'Conversion',
-            'conversions': 'Conversion',
-            'drive conversions': 'Conversion',
-            'retention': 'Retention',
-            'customer retention': 'Retention',
-            'loyalty': 'Retention',
-            'other': 'Other'
+        const GOAL_MAP: Record<string, 'AWARENESS' | 'CONVERSIONS' | 'ENGAGEMENT'> = {
+            'awareness': 'AWARENESS',
+            'conversions': 'CONVERSIONS',
+            'conversion': 'CONVERSIONS',
+            'engagement': 'ENGAGEMENT'
         };
 
-        const rawGoal = (input.goal || 'Awareness').toLowerCase().trim();
+        const rawGoal = (input.goal || 'AWARENESS').toLowerCase().trim();
         const mappedGoal = GOAL_MAP[rawGoal];
 
         if (!mappedGoal) {
-            throw new Error(`Invalid Campaign Goal: "${input.goal}". Supported: Awareness, Conversion, Retention.`);
+            throw new Error(`Invalid Campaign Goal: "${input.goal}". Supported: AWARENESS, CONVERSIONS, ENGAGEMENT.`);
         }
 
         // 2. Insert into campaigns table
@@ -57,14 +58,42 @@ export class SupabaseService {
                 user_id: userId,
                 product: input.product,
                 target_audience: input.audience || 'General',
+                price: input.price || '0',
                 campaign_goal: mappedGoal,
-                status: 'Planning'
+                status: 'PLANNING'
             })
             .select('id')
             .single();
 
         if (error) throw new Error(`DB Error: ${error.message}`);
         return campaign.id;
+    }
+
+    public async updateCampaignStatus(campaignId: string, status: DatabaseCampaign['status']) {
+        const { error } = await supabase
+            .from('campaigns')
+            .update({ status })
+            .eq('id', campaignId);
+
+        if (error) throw new Error(`Failed to update status: ${error.message}`);
+    }
+
+    public async setBestCreative(campaignId: string, creativeId: string) {
+        // 1. Update Campaign
+        const { error: campError } = await supabase
+            .from('campaigns')
+            .update({ best_creative_id: creativeId })
+            .eq('id', campaignId);
+
+        if (campError) throw new Error(`Failed to set best creative on campaign: ${campError.message}`);
+
+        // 2. Mark Creative
+        const { error: creativeError } = await supabase
+            .from('creative_variants')
+            .update({ is_best_creative: true })
+            .eq('id', creativeId);
+
+        if (creativeError) throw new Error(`Failed to mark creative as best: ${creativeError.message}`);
     }
 
     public async getUserCampaigns(userId: string): Promise<DatabaseCampaign[]> {
@@ -135,23 +164,57 @@ export class SupabaseService {
         return outputs;
     }
 
-    // --- CREATIVE VARIANTS (New Table) ---
-    public async saveCreativeVariant(campaignId: string, variant: any) {
-        // variant matches the prompt structure
-        const { error } = await supabase
-            .from('creative_variants')
-            .insert({
-                campaign_id: campaignId,
-                strategy_name: variant.headline, // Alignment
-                target_persona: variant.target_persona || 'Primary',
-                prompt_text: JSON.stringify(variant), // Storing full variant data as text or granular fields? Schema has text.
-                // Schema: prompt_text TEXT. 
-                // I'll store the core text body or full JSON string.
-                // Let's store the rationale + body.
-                temperature: 0.7
-            });
+    // --- CREATIVE VARIANTS ---
+    public async saveCreativeVariants(campaignId: string, variants: CreativeVariant[]) {
+        const rows = variants.map(v => ({
+            campaign_id: campaignId,
+            strategy_type: v.strategy_type,
+            headline: v.headline,
+            body_copy: v.body_copy,
+            visual_prompt: v.visual_prompt,
+            tone: v.tone,
+            platform: v.platform,
+            is_best_creative: v.is_best_creative || false
+        }));
 
-        if (error) console.error('Failed to save creative variant', error);
+        const { data, error } = await supabase
+            .from('creative_variants')
+            .insert(rows)
+            .select('id, strategy_type'); // Return IDs to map back if needed
+
+        if (error) throw new Error(`Failed to save creatives: ${error.message}`);
+        return data; // Returns array of {id, strategy_type}
+    }
+
+    public async getCreatives(campaignId: string): Promise<CreativeVariant[]> {
+        const { data, error } = await supabase
+            .from('creative_variants')
+            .select('*')
+            .eq('campaign_id', campaignId);
+
+        if (error) throw new Error(`Failed to fetch creatives: ${error.message}`);
+        return data as CreativeVariant[];
+    }
+
+    public async getAllUserCreatives(userId: string): Promise<CreativeVariant[]> {
+        // Fetch campaigns first to filter by user (RLS handles this but explicit check is good)
+        // OR rely on RLS if policies are set exactly.
+        // Assuming RLS policy: "Users can view own variants" -> EXISTS (campaign.user_id = uid)
+        // So we can just select all from creative_variants and RLS filters it.
+        const { data, error } = await supabase
+            .from('creative_variants')
+            .select(`
+                *,
+                campaigns (
+                    product
+                )
+            `)
+            .order('created_at', { ascending: false });
+
+        if (error) throw new Error(`Failed to fetch all creatives: ${error.message}`);
+        // Flatten the campaign product into the object for UI convenience if needed, 
+        // type assertion might be tricky here, but we will handle it in the UI or map it.
+        return data as unknown as CreativeVariant[];
     }
 
     // --- DRAFTS ---

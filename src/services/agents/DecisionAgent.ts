@@ -1,5 +1,6 @@
 import { BaseAgent } from './BaseAgent';
-import type { AgentResult } from '../../types/abmel';
+import type { AgentResult, CreativeVariant } from '../../types/abmel';
+import { SupabaseService } from '../SupabaseService';
 
 export class DecisionAgent extends BaseAgent {
     constructor() {
@@ -8,84 +9,77 @@ export class DecisionAgent extends BaseAgent {
 
     async execute(input: any): Promise<AgentResult> {
         this.status = 'running';
-        this.log('Ranking creatives and making final decision...');
+        this.log('Evaluating creatives based on campaign goal rules...');
 
-        const variants = input.variants || [];
-        const ctrScores = input.ctr_scores || {};
-        const memScores = input.mem_scores || {};
-        const brandScores = input.brand_scores || {};
-        const rejectedIds = input.rejected_variants || [];
+        try {
+            const variants: CreativeVariant[] = input.variants || [];
+            const goal = (input.goal || 'AWARENESS').toUpperCase();
+            const campaignId = input.campaignId;
 
-        // 1. Filter out rejected variants
-        const candidates = variants.filter((v: any) => !rejectedIds.includes(v.id));
+            if (variants.length === 0) {
+                throw new Error("No variants provided for decision making.");
+            }
 
-        if (candidates.length === 0) {
-            this.log('All variants rejected. Triggering regeneration.');
+            // 1. Rule-Based Selection Heuristic
+            // Mapping Goal -> Preferred Strategies (in order of preference)
+            const preferenceMap: Record<string, string[]> = {
+                'AWARENESS': ['EMOTIONAL', 'LIFESTYLE', 'SOCIAL_PROOF'],
+                'CONVERSIONS': ['PRICE', 'FEATURE', 'SOCIAL_PROOF'],
+                'ENGAGEMENT': ['SOCIAL_PROOF', 'LIFESTYLE', 'EMOTIONAL']
+            };
+
+            const preferredStrategies = preferenceMap[goal] || ['FEATURE'];
+
+            // Find best match
+            let bestCreative = variants[0];
+            let reasoning = "Default selection.";
+
+            // Try to find exact match in order of preference
+            for (const strat of preferredStrategies) {
+                const match = variants.find(v => v.strategy_type === strat);
+                if (match) {
+                    bestCreative = match;
+                    reasoning = `Selected based on strategy alignment. Goal '${goal}' prioritizes '${strat}' strategy.`;
+                    break;
+                }
+            }
+
+            this.log(`Selected Creative ID: ${bestCreative.id} (${bestCreative.strategy_type})`);
+            this.log(reasoning);
+
+            // 2. Persist Decision (Mark in DB)
+            if (campaignId && !campaignId.startsWith('temp-')) {
+                try {
+                    await SupabaseService.getInstance().setBestCreative(campaignId, bestCreative.id);
+                    this.log('Persisted best creative selection to database.');
+                } catch (dbErr: any) {
+                    this.log(`Warning: Failed to persist best creative: ${dbErr.message}`);
+                }
+            }
+
+            this.status = 'completed';
+
             return {
                 agentName: this.name,
                 status: 'completed',
                 data: {
-                    trigger_regeneration: true,
-                    rejected_count: rejectedIds.length
+                    selected_creative: bestCreative,
+                    bestCreativeId: bestCreative.id,
+                    reasoning: reasoning
                 },
                 timestamp: new Date().toISOString(),
                 logs: this.logs
             };
+
+        } catch (error: any) {
+            this.status = 'failed';
+            return {
+                agentName: this.name,
+                status: 'failed',
+                data: { error: error.message },
+                timestamp: new Date().toISOString(),
+                logs: this.logs
+            };
         }
-
-        // 2. Rank Candidates
-        // Score = CTR (0.5) + Mem (0.3) + Brand (0.2)
-        const scoredCandidates = candidates.map((v: any) => {
-            const s1 = ctrScores[v.id] || 50;
-            const s2 = memScores[v.id] || 50;
-            const s3 = brandScores[v.id] || 50;
-            const score = (s1 * 0.5) + (s2 * 0.3) + (s3 * 0.2);
-            return { ...v, score };
-        });
-
-        scoredCandidates.sort((a: any, b: any) => b.score - a.score);
-
-        const winner = scoredCandidates[0];
-        const runnerUp = scoredCandidates.length > 1 ? scoredCandidates[1] : null;
-        const ranking = scoredCandidates.map((v: any) => v.id);
-
-        // Generate Reasoning
-        const reason = `Variant "${winner.headline}" was selected as the winner with a weighted score of ${winner.score.toFixed(1)}/100. ` +
-            `It performed strongest in ${this.getTopMetric(winner.id, ctrScores, memScores, brandScores)}. ` +
-            (runnerUp ? `It outperformed the runner-up (Variant ${runnerUp.id}) by ${(winner.score - runnerUp.score).toFixed(1)} points.` : '');
-
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        this.log(`Decision made. Selected: ${winner.id} (Score: ${winner.score.toFixed(1)})`);
-        this.status = 'completed';
-
-        return {
-            agentName: this.name,
-            status: this.status,
-            data: {
-                selected_creative: winner, // Pass full object to context
-                recommendedVariant: winner.id,
-                ranking: ranking,
-                reasoning: {
-                    summary: reason,
-                    metrics_breakdown: [
-                        { name: 'CTR Prediction', weight: '50%', score: (ctrScores[winner.id] || 0) },
-                        { name: 'Memorability', weight: '30%', score: (memScores[winner.id] || 0) },
-                        { name: 'Brand Check', weight: '20%', score: (brandScores[winner.id] || 0) }
-                    ]
-                }
-            },
-            timestamp: new Date().toISOString(),
-            logs: this.logs
-        };
-    }
-
-    private getTopMetric(id: string, ctr: any, mem: any, brand: any): string {
-        const s1 = ctr[id] || 0;
-        const s2 = mem[id] || 0;
-        const s3 = brand[id] || 0;
-        if (s1 >= s2 && s1 >= s3) return 'Click-Through Rate';
-        if (s2 >= s1 && s2 >= s3) return 'Memorability';
-        return 'Brand Alignment';
     }
 }

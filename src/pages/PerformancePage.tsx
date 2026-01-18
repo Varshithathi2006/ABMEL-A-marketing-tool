@@ -1,19 +1,24 @@
 import { motion } from 'framer-motion';
-import { TrendingUp, Users, Eye, MousePointer, Download, Calendar } from 'lucide-react';
+import { TrendingUp, Users, Eye, MousePointer, Download, Calendar, Zap, AlertCircle } from 'lucide-react';
 import { useCampaignStore } from '../store/useCampaignStore';
-import { useMemo } from 'react';
+import { useAuthStore } from '../store/useAuthStore';
+import { useMemo, useEffect } from 'react';
 
 export const PerformancePage = () => {
-    const { campaigns } = useCampaignStore();
+    const { campaigns, allCreatives, fetchAllCreatives } = useCampaignStore();
+    const { user } = useAuthStore();
+
+    useEffect(() => {
+        if (user?.id) {
+            fetchAllCreatives(user.id);
+        }
+    }, [user, fetchAllCreatives]);
 
     // Derived Analytics from Real Data
     const metrics = useMemo(() => {
         const completed = campaigns.filter(c => c.status === 'Completed').length;
         const active = campaigns.filter(c => c.status === 'Running').length;
-        // const total = campaigns.length;
 
-        // Mocking granular stats based on real counts (since we don't have ad network integration yet)
-        // In a real scenario, these would come from an Analytics Service aggregating data.
         return {
             impressions: (completed * 15000) + (active * 5000),
             clicks: (completed * 450) + (active * 120),
@@ -28,8 +33,24 @@ export const PerformancePage = () => {
         return num.toString();
     };
 
+    // Calculate deterministic mock stats for creatives
+    const creativeStats = useMemo(() => {
+        if (!allCreatives) return [];
+        return allCreatives.map((c: any) => {
+            // Pseudo-random based on ID length or char code to be consistent
+            const seed = c.id ? c.id.charCodeAt(0) : 0;
+            const impressions = 1000 + (seed * 50);
+            const clicks = Math.round(impressions * (0.01 + (seed % 5) / 100));
+            const ctr = ((clicks / impressions) * 100).toFixed(2);
+            return {
+                ...c,
+                stats: { impressions, clicks, ctr, conversions: Math.round(clicks * 0.1) }
+            };
+        });
+    }, [allCreatives]);
+
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-500 pb-12">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-white tracking-tight">System Performance</h1>
@@ -77,7 +98,6 @@ export const PerformancePage = () => {
                 <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-6">
                     <h3 className="text-lg font-bold text-white mb-6">Optimization Trend</h3>
                     <div className="h-64 flex items-end justify-between gap-2">
-                        {/* Dynamic bars based on metric + randomness for visual demo */}
                         {Array.from({ length: 12 }).map((_, i) => {
                             const height = 40 + Math.random() * 50;
                             return (
@@ -94,12 +114,6 @@ export const PerformancePage = () => {
                                 </motion.div>
                             )
                         })}
-                    </div>
-                    <div className="flex justify-between mt-4 text-xs text-slate-500 uppercase font-bold tracking-wider">
-                        <span>Week 1</span>
-                        <span>Week 2</span>
-                        <span>Week 3</span>
-                        <span>Week 4</span>
                     </div>
                 </div>
 
@@ -129,6 +143,72 @@ export const PerformancePage = () => {
                         ))}
                     </div>
                 </div>
+            </div>
+
+            {/* Creative Performance Table */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                        <Zap size={20} className="text-yellow-500" />
+                        Creative Performance Breakdown
+                    </h3>
+                    <div className="text-xs text-slate-500 italic">Projected Data (Simulation)</div>
+                </div>
+
+                {creativeStats.length > 0 ? (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-950/50 border-b border-slate-800">
+                                    <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Creative Headline</th>
+                                    <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Campaign</th>
+                                    <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Strategy</th>
+                                    <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Proj. CTR</th>
+                                    <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Impressions</th>
+                                    <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Clicks</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-800">
+                                {creativeStats.map((c: any, idx: number) => (
+                                    <tr key={idx} className="hover:bg-slate-800/50 transition-colors group">
+                                        <td className="p-4">
+                                            <div className="font-bold text-slate-200 line-clamp-1 max-w-xs group-hover:text-blue-400 transition-colors">
+                                                {c.headline}
+                                            </div>
+                                            <div className="text-xs text-slate-500 flex items-center gap-2 mt-1">
+                                                <span className="uppercase">{c.platform}</span>
+                                                {c.is_best_creative && <span className="text-emerald-500 font-bold px-1.5 py-0.5 bg-emerald-500/10 rounded">BEST PICK</span>}
+                                            </div>
+                                        </td>
+                                        <td className="p-4 text-sm text-slate-400">
+                                            {c.campaigns?.product || 'Unknown Campaign'}
+                                        </td>
+                                        <td className="p-4 text-sm">
+                                            <span className="px-2 py-1 rounded bg-slate-800 text-slate-300 text-xs font-bold border border-slate-700">
+                                                {c.strategy_type}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-right font-mono text-emerald-400 font-bold">
+                                            {c.stats.ctr}%
+                                        </td>
+                                        <td className="p-4 text-right font-mono text-slate-300">
+                                            {formatNumber(c.stats.impressions)}
+                                        </td>
+                                        <td className="p-4 text-right font-mono text-slate-300">
+                                            {c.stats.clicks}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="p-12 text-center text-slate-500 flex flex-col items-center">
+                        <AlertCircle size={32} className="mb-3 opacity-50" />
+                        <p>No creative performance data available yet.</p>
+                        <p className="text-sm mt-1">Run a campaign to generate creatives and view their potential impact.</p>
+                    </div>
+                )}
             </div>
         </div>
     );

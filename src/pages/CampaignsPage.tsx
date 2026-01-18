@@ -5,12 +5,14 @@ import { Search, Filter, MoreHorizontal, ArrowUpRight, Calendar, BarChart3, User
 import { useCampaignStore } from '../store/useCampaignStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useNavigationStore } from '../store/useNavigationStore';
+import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 
 export const CampaignsPage = () => {
     const { campaigns, fetchCampaigns, fetchCampaignDetails } = useCampaignStore();
     const { user } = useAuthStore();
     const { setView } = useNavigationStore();
+    const navigate = useNavigate();
 
     const [selectedCampaign, setSelectedCampaign] = useState<any>(null);
     const [details, setDetails] = useState<any>(null);
@@ -211,10 +213,16 @@ export const CampaignsPage = () => {
                                 </div>
                             )}
 
-                            <div className="mt-8 pt-8 border-t border-slate-800">
-                                <button className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors">
+                            <div className="mt-8 pt-8 border-t border-slate-800 grid grid-cols-2 gap-4">
+                                <button
+                                    onClick={() => navigate(`/campaigns/${selectedCampaign.id}/creatives`)}
+                                    className="w-full py-4 bg-[#64FFDA] text-[#0A192F] font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
                                     <ArrowUpRight size={18} />
-                                    Export Full Report PDF
+                                    View Creatives
+                                </button>
+                                <button className="w-full py-4 bg-slate-800 text-slate-300 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-slate-700 transition-colors">
+                                    <FileJson size={18} />
+                                    Export JSON
                                 </button>
                             </div>
                         </motion.div>

@@ -6,6 +6,7 @@ export interface MarketIntelligenceOutput {
     industry: string;
     keyOpportunities: string[];
     keyRisks: string[];
+    competitorMessaging: string[]; // Added requirement
     recommendedPositioning: string;
     suggestedMessagingAngles: string[];
 }
@@ -67,6 +68,7 @@ export class MarketIntelligenceAgent extends BaseAgent {
             'saas': {
                 maturity: 'growing',
                 narratives: ['Efficiency at scale', 'AI-powered automation', 'Seamless integration'],
+                competitorMessaging: ['"The #1 Platform for X"', '"Automate everything"', '"Built for scale"'],
                 opportunities: ['Focus on specific pain-point resolution', 'Human-centric AI benefits', 'Time-to-value speed'],
                 risks: ['Buzzword fatigue (too much "AI")', 'Feature complexity', 'Lack of trust'],
                 positioning: 'The Intelligent Enabler',
@@ -75,6 +77,7 @@ export class MarketIntelligenceAgent extends BaseAgent {
             'fashion': {
                 maturity: 'saturated',
                 narratives: ['Sustainability', 'Self-expression', 'Dopamine dressing'],
+                competitorMessaging: ['"Wear your vibe"', '"Timeless classics"', '"Comfort meets style"'],
                 opportunities: ['Radical transparency', 'Digital-only fashion', 'Nostalgia remix'],
                 risks: ['Greenwashing accusations', 'Trend obsolescence', 'Generic imagery'],
                 positioning: 'The Identity Shaper',
@@ -83,6 +86,7 @@ export class MarketIntelligenceAgent extends BaseAgent {
             'fintech': {
                 maturity: 'mature',
                 narratives: ['Democratizing finance', 'Crypto future', 'Frictionless payments'],
+                competitorMessaging: ['"Banking without borders"', '"Invest in your future"', '"Fast, secure, simple"'],
                 opportunities: ['Financial wellness/education', 'Community-driven wealth', 'Transparent fees'],
                 risks: ['Regulatory fears', 'Security doubts', 'Cold/impersonal feel'],
                 positioning: 'The Trusted Partner',
@@ -91,6 +95,7 @@ export class MarketIntelligenceAgent extends BaseAgent {
             'health': {
                 maturity: 'growing',
                 narratives: ['Holistic wellness', 'Science-backed', 'Personalized care'],
+                competitorMessaging: ['"Clinically proven"', '"Nature meets science"', '"Unlock your potential"'],
                 opportunities: ['Mental health integration', 'Preventative lifestyle', 'Community support'],
                 risks: ['Pseudoscientific claims', 'Over-promising', 'Medical jargon'],
                 positioning: 'The Wellness Companion',
@@ -99,6 +104,7 @@ export class MarketIntelligenceAgent extends BaseAgent {
             'general_tech': {
                 maturity: 'competitive',
                 narratives: ['Innovation', 'Performance', 'Design'],
+                competitorMessaging: ['"The world\'s most powerful X"', '"Designed for Pro"', '"Experience the future"'],
                 opportunities: ['Niche feature focus', 'Design aesthetics', 'Customer support excellence'],
                 risks: ['Commoditization', 'Spec wars', 'Design copycats'],
                 positioning: 'The Premium Choice',
@@ -113,6 +119,7 @@ export class MarketIntelligenceAgent extends BaseAgent {
             industry: industry,
             keyOpportunities: strat.opportunities,
             keyRisks: strat.risks,
+            competitorMessaging: strat.competitorMessaging,
             recommendedPositioning: strat.positioning,
             suggestedMessagingAngles: strat.angles
         };

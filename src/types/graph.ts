@@ -15,11 +15,12 @@ export interface TaskGraph {
     context: Record<string, any>; // Shared blackboard for data exchange
 }
 
-export type GraphEventType = 'node_start' | 'node_complete' | 'node_fail' | 'graph_complete' | 'node_reset';
+export type GraphEventType = 'node_start' | 'node_complete' | 'node_fail' | 'graph_complete' | 'node_reset' | 'WORKFLOW_COMPLETED';
 
 export interface GraphEvent {
     type: GraphEventType;
     nodeId?: string;
+    stage?: string;
     data?: any;
     timestamp: string;
 }

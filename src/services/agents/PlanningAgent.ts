@@ -6,9 +6,11 @@ interface PlanningInput {
     product: string;
     audience: string;
     brandGuidelines?: string;
-    goal?: string; // awareness, conversion, etc.
+    // Strict Enum for logic branching
+    goal: 'AWARENESS' | 'CONVERSIONS' | 'ENGAGEMENT';
     platforms?: string[];
     price?: string;
+    campaignId?: string;
 }
 
 export class PlanningAgent extends BaseAgent {
@@ -23,25 +25,25 @@ export class PlanningAgent extends BaseAgent {
         try {
             // STEP 1: INPUT INTERPRETATION & NORMALIZATION
             const safeInput = this.normalizeInput(input);
-            this.log(`Analyzed Context: ${safeInput.product} targeting ${safeInput.audience}`);
+            this.log(`Analyzed Context: ${safeInput.product} targeting ${safeInput.audience} for ${safeInput.goal}`);
 
-            // STEP 2 & 3: AGENT SELECTION & DECOMPOSITION
-            // In a real LLM scenario, this would be dynamic.
-            // For this deterministic version, we define the standard high-performance pipeline.
+            // STEP 2: BUILD DAG
+            // Deterministic graph based on scope.
             const nodes = this.constructExecutionPipeline(safeInput);
 
-            // STEP 4, 5, 6: GRAPH CONSTRUCTION (Edges, Data Flow, Retry Logic)
+            // STEP 3: GRAPH CONSTRUCTION
             const taskGraph: TaskGraph = {
                 context: {
                     ...safeInput,
                     rejected_variants: [],
                     loop_count: 0,
-                    history: []
+                    history: [],
+                    campaignId: safeInput.campaignId // Pass through ID for persistence
                 },
                 nodes: nodes
             };
 
-            this.log('Task Graph Generated: 9 Active Nodes defined.');
+            this.log('Task Graph Generated: 4 Active Nodes defined.');
             this.status = 'completed';
 
             return {
@@ -49,7 +51,7 @@ export class PlanningAgent extends BaseAgent {
                 status: this.status,
                 data: {
                     taskGraph,
-                    reasoning: "Selected standard 4-stage pipeline based on Campaign Goal: Conversion."
+                    reasoning: `Selected standard pipeline for ${safeInput.goal}.`
                 },
                 timestamp: new Date().toISOString(),
                 logs: this.logs
@@ -68,13 +70,30 @@ export class PlanningAgent extends BaseAgent {
     }
 
     private normalizeInput(input: any): PlanningInput {
+        // Strict mapping for Campaign Goal
+        const GOAL_MAP: Record<string, 'AWARENESS' | 'CONVERSIONS' | 'ENGAGEMENT'> = {
+            'awareness': 'AWARENESS',
+            'brand awareness': 'AWARENESS',
+            'conversion': 'CONVERSIONS',
+            'conversions': 'CONVERSIONS',
+            'engagement': 'ENGAGEMENT'
+        };
+
+        const rawGoal = (input.goal || 'AWARENESS').toLowerCase().trim();
+        const mappedGoal = GOAL_MAP[rawGoal];
+
+        if (!mappedGoal) {
+            throw new Error(`Invalid Campaign Goal: "${input.goal}". Must be Awareness, Conversions, or Engagement.`);
+        }
+
         return {
             product: input.product || "Unknown Product",
             audience: input.audience || "General Audience",
             brandGuidelines: input.brandGuidelines || "",
-            goal: input.goal || "awareness",
+            goal: mappedGoal,
             platforms: Array.isArray(input.platforms) ? input.platforms : ['LinkedIn', 'Twitter'],
-            price: input.price || "Not specified"
+            price: input.price || "Not specified",
+            campaignId: input.campaignId
         };
     }
 
@@ -85,13 +104,13 @@ export class PlanningAgent extends BaseAgent {
         nodes['market_research'] = {
             id: 'market_research',
             agentName: 'MarketIntelligenceAgent',
-            dependencies: [], // Root node
+            dependencies: [],
             status: 'idle',
             inputContextKeys: ['product', 'audience'],
             outputContextKeys: ['marketSummary', 'keyOpportunities', 'keyRisks', 'recommendedPositioning', 'suggestedMessagingAngles']
         };
 
-        // 2. Persona Modeling (Dependent on Market Research)
+        // 2. Persona Modeling
         nodes['persona_modeling'] = {
             id: 'persona_modeling',
             agentName: 'PersonaModelingAgent',
@@ -101,18 +120,25 @@ export class PlanningAgent extends BaseAgent {
             outputContextKeys: ['personas', 'primaryPersona', 'creativeConstraints']
         };
 
-        // 3. Creative Generation (The Core)
+        // 3. Creative Generation (Critical Step)
         nodes['creative_generation'] = {
             id: 'creative_generation',
             agentName: 'CreativeGenerationAgent',
             dependencies: ['persona_modeling', 'market_research'],
             status: 'idle',
-            inputContextKeys: ['product', 'primaryPersona', 'creativeConstraints', 'goal', 'brandGuidelines', 'keyOpportunities'],
-            outputContextKeys: ['variants'] // Array of 5 CreativeVariant objects
+            inputContextKeys: ['product', 'primaryPersona', 'creativeConstraints', 'goal', 'brandGuidelines', 'keyOpportunities', 'campaignId'],
+            outputContextKeys: ['variants']
         };
 
-        // 4. STOP: Strictly terminate after Creative Generation.
-        // Downstream agents (Evaluation, Decision, Guardrails) are forcefully excluded from this graph.
+        // 4. Best Creative Selection (Rule Based)
+        nodes['decision'] = {
+            id: 'decision',
+            agentName: 'DecisionAgent',
+            dependencies: ['creative_generation'],
+            status: 'idle',
+            inputContextKeys: ['variants', 'campaignId'],
+            outputContextKeys: ['selected_creative', 'bestCreativeId']
+        };
 
         return nodes;
     }

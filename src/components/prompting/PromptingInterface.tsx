@@ -25,11 +25,49 @@ export const PromptingInterface = () => {
     const { setInput, planCampaign } = useCampaignStore();
     const hasInitialized = useRef(false);
 
-    // Initial Greeting
+    // Initial Greeting & State Restoration
     useEffect(() => {
         if (hasInitialized.current) return;
         hasInitialized.current = true;
 
+        const { input } = useCampaignStore.getState();
+
+        // 1. Check if we have existing context (Navigation Back / Draft Restore)
+        if (input.product && input.audience) {
+            console.log("[UI] Restoring existing context...");
+            addSystemMessage("Neural context restored. I recall your campaign parameters.", "restore-context");
+            handleUserResponse(`Configured for: ${input.product} targeting ${input.audience}`);
+
+            setTimeout(() => {
+                addSystemMessage("Ready to execute. Shall we proceed to the Planning Phase?", "ready-to-plan");
+                addComponentMessage(
+                    <div className="flex justify-start">
+                        <button
+                            onClick={async (e) => {
+                                const btn = e.currentTarget;
+                                btn.disabled = true;
+                                btn.innerHTML = 'Connecting to Hive...';
+                                try {
+                                    await planCampaign();
+                                } catch (err) {
+                                    console.error(err);
+                                    btn.disabled = false;
+                                    btn.innerHTML = 'Retry Planning';
+                                }
+                            }}
+                            className="bg-green-500 hover:bg-green-400 text-white font-bold py-3 px-8 rounded-xl flex items-center gap-2 shadow-lg shadow-green-500/20 transition-all"
+                        >
+                            <Play size={20} className="fill-current" />
+                            Initiate Planning Phase
+                        </button>
+                    </div>,
+                    "action-proceed"
+                );
+            }, 800);
+            return;
+        }
+
+        // 2. Cold Start
         setTimeout(() => {
             addSystemMessage("Welcome to the ABMEL Command Center. \n\nI am your autonomous agentic partner. To begin, please provide any specific brand guidelines or constraints.", "welcome");
 

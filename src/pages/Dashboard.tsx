@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
 import { useCampaignStore } from '../store/useCampaignStore';
 import { useAuthStore } from '../store/useAuthStore';
-// import { useNavigationStore } from '../store/useNavigationStore';
+import { useNavigate } from 'react-router-dom'; // Added
 import { AgentExecutionView } from '../components/AgentExecutionView';
 import { PromptingInterface } from '../components/prompting/PromptingInterface';
 import { CreativeReview } from './CreativeReview';
@@ -11,7 +11,7 @@ import { CreativeReview } from './CreativeReview';
 export const Dashboard = () => {
     const { status, executeCampaign, campaigns, fetchCampaigns } = useCampaignStore();
     const { user } = useAuthStore();
-    // const { setView } = useNavigationStore();
+    const navigate = useNavigate(); // Hook
 
     useEffect(() => {
         if (user?.id) fetchCampaigns(user.id);
@@ -23,7 +23,7 @@ export const Dashboard = () => {
     const completedCampaigns = campaigns.filter(c => c.status === 'Completed').length;
 
     // View: Active Execution
-    if (status === 'running') {
+    if (status === 'running' || status === 'CREATIVES_READY') {
         return <AgentExecutionView />;
     }
 
@@ -108,8 +108,12 @@ export const Dashboard = () => {
                             </thead>
                             <tbody className="divide-y divide-slate-800">
                                 {campaigns.slice(0, 3).map((c, i) => (
-                                    <tr key={c.id || i} className="hover:bg-slate-800/50 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-white">{c.name}</td>
+                                    <tr
+                                        key={c.id || i}
+                                        onClick={() => navigate(`/campaigns/${c.id}/creatives`)} // Navigation
+                                        className="hover:bg-slate-800/50 transition-colors cursor-pointer group"
+                                    >
+                                        <td className="px-6 py-4 font-medium text-white group-hover:text-blue-400 transition-colors">{c.name}</td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold 
                                                     ${c.status === 'Running' ? 'bg-blue-500/10 text-blue-400' :

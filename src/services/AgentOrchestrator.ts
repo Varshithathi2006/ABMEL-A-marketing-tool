@@ -22,15 +22,12 @@ export class AgentOrchestrator {
         this.subscribers.forEach(s => s(event));
     }
 
-    // Legacy method maintained for compatibility
     public async planCampaign(input: any) {
         console.log('Orchestrator: Planning campaign...', input);
-        // Store input for startExecution
         this.currentCampaignControl.input = input;
 
-        // Emulate "Planning Complete" to satisfy UI flow
-        // The actual planning happens in the chain, but UI expects a plan artifact *before* execution usually.
-        // However, in the chain, it's sequential. We will just tell UI we are ready.
+        // Emit the Deterministic DAG Structure for UI Visualization (4 Steps)
+        // This must match the workflow in workflow.ts and PlanningAgent.ts
         this.emit({
             type: 'node_complete',
             nodeId: 'planning',
@@ -38,15 +35,10 @@ export class AgentOrchestrator {
                 taskGraph: {
                     nodes: {
                         planning: { id: 'planning', agentName: 'PlanningAgent', status: 'completed', dependencies: [], inputContextKeys: [], outputContextKeys: [] },
-                        market_research: { id: 'market_research', agentName: 'MarketResearchAgent', status: 'idle', dependencies: ['planning'], inputContextKeys: [], outputContextKeys: [] },
-                        persona_modeling: { id: 'persona_modeling', agentName: 'PersonaAgent', status: 'idle', dependencies: ['market_research'], inputContextKeys: [], outputContextKeys: [] },
-                        creative_generation: { id: 'creative_generation', agentName: 'CreativeAgent', status: 'idle', dependencies: ['persona_modeling'], inputContextKeys: [], outputContextKeys: [] },
-                        evaluation_ctr: { id: 'evaluation_ctr', agentName: 'CriticAgent', status: 'idle', dependencies: ['creative_generation'], inputContextKeys: [], outputContextKeys: [] },
-                        evaluation_mem: { id: 'evaluation_mem', agentName: 'MemoryAgent', status: 'idle', dependencies: ['creative_generation'], inputContextKeys: [], outputContextKeys: [] },
-                        evaluation_brand: { id: 'evaluation_brand', agentName: 'BrandSafetyAgent', status: 'idle', dependencies: ['creative_generation'], inputContextKeys: [], outputContextKeys: [] },
-                        decision: { id: 'decision', agentName: 'DecisionAgent', status: 'idle', dependencies: ['evaluation_ctr'], inputContextKeys: [], outputContextKeys: [] },
-                        guardrails: { id: 'guardrails', agentName: 'SafetyAgent', status: 'idle', dependencies: ['decision'], inputContextKeys: [], outputContextKeys: [] },
-                        learning: { id: 'learning', agentName: 'LearningAgent', status: 'idle', dependencies: ['guardrails'], inputContextKeys: [], outputContextKeys: [] }
+                        market_research: { id: 'market_research', agentName: 'MarketIntelligenceAgent', status: 'idle', dependencies: ['planning'], inputContextKeys: [], outputContextKeys: [] },
+                        persona_modeling: { id: 'persona_modeling', agentName: 'PersonaModelingAgent', status: 'idle', dependencies: ['market_research'], inputContextKeys: [], outputContextKeys: [] },
+                        creative_generation: { id: 'creative_generation', agentName: 'CreativeGenerationAgent', status: 'idle', dependencies: ['persona_modeling'], inputContextKeys: [], outputContextKeys: [] },
+                        decision: { id: 'decision', agentName: 'DecisionAgent', status: 'idle', dependencies: ['creative_generation'], inputContextKeys: [], outputContextKeys: [] }
                     },
                     context: input
                 }
@@ -59,28 +51,45 @@ export class AgentOrchestrator {
         if (!this.currentCampaignControl.input) throw new Error('No input provided.');
         console.log('Starting LangChain Workflow...');
 
-        // Prepare Initial State
         const initialState: AbmelState = {
             product: this.currentCampaignControl.input.product,
             goal: this.currentCampaignControl.input.goal,
             brandGuidelines: this.currentCampaignControl.input.brandGuidelines,
+            campaignId: this.currentCampaignControl.input.campaignId, // Persistence ID
             loopCount: 0,
-
-            // Inject Event Emitter into State so Agents can talk to UI
             onEvent: (e: any) => this.emit(e)
         };
 
         try {
             // Execute Chain
             const result = await abmelWorkflow.invoke(initialState);
-
             console.log("Workflow Complete", result);
-            this.emit({ type: 'graph_complete', timestamp: new Date().toISOString() });
 
-            // Persist Final Artifacts
+            // Persistence is handled within agents via Supabase calls (e.g. DecisionAgent)
+            // But we double check Creative Generation output here for safety.
+
             if (result.creativeVariants) {
-                this.saveArtifact('creative_generation', { variants: result.creativeVariants, campaignId: this.currentCampaignControl.input.campaignId });
+                // Ensure they are saved if Agent didn't? 
+                // Currently only DecisionAgent explicitly saves 'best'. 
+                // Creative variants are returned but SupabaseService.saveCreativeVariants is needed.
+                // Let's call it here to be safe, or assume the Agent/Store does it.
+                // Step 7 says "Save all creatives".
+
+                await this.saveArtifact('creative_generation', { variants: result.creativeVariants });
+
+                this.emit({
+                    type: 'WORKFLOW_COMPLETED',
+                    stage: 'CREATIVE_GENERATION',
+                    data: {
+                        count: result.creativeVariants?.length || 0,
+                        variants: result.creativeVariants,
+                        decision: result.decision
+                    },
+                    timestamp: new Date().toISOString()
+                });
             }
+
+            this.emit({ type: 'graph_complete', timestamp: new Date().toISOString() });
 
         } catch (error) {
             console.error("Workflow Failed", error);
@@ -93,11 +102,12 @@ export class AgentOrchestrator {
         if (!campaignId) return;
 
         try {
+            // Generic Save
             await SupabaseService.getInstance().saveAgentOutput(campaignId, nodeId, data);
+
+            // Specialized Save for Creatives
             if (nodeId === 'creative_generation' && data.variants) {
-                for (const variant of data.variants) {
-                    await SupabaseService.getInstance().saveCreativeVariant(campaignId, variant);
-                }
+                await SupabaseService.getInstance().saveCreativeVariants(campaignId, data.variants);
             }
         } catch (err) {
             console.error('Persistence Error', err);

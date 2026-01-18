@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY REFERENCES auth.users(id),
     email TEXT UNIQUE NOT NULL,
-    role TEXT CHECK (role IN ('Marketing_Director', 'Auditor', 'System_Admin')),
+    role TEXT CHECK (role IN ('Marketing_Director', 'Auditor', 'System_Admin')) DEFAULT 'Marketing_Director',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -15,9 +15,10 @@ CREATE TABLE IF NOT EXISTS public.campaigns (
     user_id UUID REFERENCES public.users(id) NOT NULL,
     product TEXT NOT NULL,
     target_audience TEXT NOT NULL,
-    price TEXT,
-    campaign_goal TEXT CHECK (campaign_goal IN ('Awareness', 'Conversion', 'Retention', 'Other')),
-    status TEXT CHECK (status IN ('Planning', 'Processing', 'Complete', 'Failed')) DEFAULT 'Planning',
+    price TEXT NOT NULL,
+    campaign_goal TEXT CHECK (campaign_goal IN ('AWARENESS', 'CONVERSIONS', 'ENGAGEMENT')),
+    status TEXT CHECK (status IN ('PLANNING', 'PROCESSING', 'CREATIVES_READY', 'FAILED')) DEFAULT 'PLANNING',
+    best_creative_id UUID, -- Will reference creative_variants(id) after generation
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -32,7 +33,7 @@ CREATE TABLE IF NOT EXISTS public.brand_guidelines (
     uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 4. AGENT OUTPUTS
+-- 4. AGENT OUTPUTS (Generic store for intermediate steps like Market Analysis)
 CREATE TABLE IF NOT EXISTS public.agent_outputs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     campaign_id UUID REFERENCES public.campaigns(id) NOT NULL,
@@ -41,18 +42,21 @@ CREATE TABLE IF NOT EXISTS public.agent_outputs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 5. CREATIVE VARIANTS
+-- 5. CREATIVE VARIANTS (Strict Schema)
 CREATE TABLE IF NOT EXISTS public.creative_variants (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     campaign_id UUID REFERENCES public.campaigns(id) NOT NULL,
-    strategy_name TEXT,
-    target_persona TEXT,
-    prompt_text TEXT NOT NULL,
-    temperature NUMERIC DEFAULT 0.7,
+    strategy_type TEXT CHECK (strategy_type IN ('FEATURE', 'EMOTIONAL', 'SOCIAL_PROOF', 'PRICE', 'LIFESTYLE')) NOT NULL,
+    headline TEXT NOT NULL,
+    body_copy TEXT NOT NULL,
+    visual_prompt TEXT NOT NULL,
+    tone TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    is_best_creative BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 6. USER DRAFTS (Missing in original schema)
+-- 6. USER DRAFTS
 CREATE TABLE IF NOT EXISTS public.user_drafts (
     user_id UUID PRIMARY KEY REFERENCES public.users(id),
     draft_data JSONB NOT NULL,
@@ -74,6 +78,9 @@ CREATE POLICY "Users can view own campaigns" ON public.campaigns FOR SELECT USIN
 DROP POLICY IF EXISTS "Users can insert own campaigns" ON public.campaigns;
 CREATE POLICY "Users can insert own campaigns" ON public.campaigns FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own campaigns" ON public.campaigns;
+CREATE POLICY "Users can update own campaigns" ON public.campaigns FOR UPDATE USING (auth.uid() = user_id);
+
 DROP POLICY IF EXISTS "Users can view own guidelines" ON public.brand_guidelines;
 CREATE POLICY "Users can view own guidelines" ON public.brand_guidelines FOR SELECT USING (EXISTS (SELECT 1 FROM public.campaigns WHERE id = brand_guidelines.campaign_id AND user_id = auth.uid()));
 
@@ -82,6 +89,9 @@ CREATE POLICY "Users can view own agent outputs" ON public.agent_outputs FOR SEL
     
 DROP POLICY IF EXISTS "Users can view own variants" ON public.creative_variants;
 CREATE POLICY "Users can view own variants" ON public.creative_variants FOR SELECT USING (EXISTS (SELECT 1 FROM public.campaigns WHERE id = creative_variants.campaign_id AND user_id = auth.uid()));
+
+DROP POLICY IF EXISTS "Users can insert own variants" ON public.creative_variants;
+CREATE POLICY "Users can insert own variants" ON public.creative_variants FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM public.campaigns WHERE id = creative_variants.campaign_id AND user_id = auth.uid()));
 
 DROP POLICY IF EXISTS "Users can manage own drafts" ON public.user_drafts;
 CREATE POLICY "Users can manage own drafts" ON public.user_drafts FOR ALL USING (auth.uid() = user_id);

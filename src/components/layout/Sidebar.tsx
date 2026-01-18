@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Home, PlayCircle, BarChart2, Settings, ShieldCheck, Box } from 'lucide-react';
 import { useNavigationStore } from '../../store/useNavigationStore';
+import { useNavigate } from 'react-router-dom'; // Added import
 import clsx from 'clsx';
 
 import { AnimatePresence } from 'framer-motion';
@@ -13,6 +14,13 @@ interface SidebarProps {
 
 export const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
     const { currentView, setView } = useNavigationStore();
+    const navigate = useNavigate(); // Hook
+
+    const handleNavigation = (view: any) => {
+        setView(view);
+        navigate('/'); // Ensure we are on the main dashboard layout
+        onClose?.();
+    };
 
     return (
         <>
@@ -55,7 +63,7 @@ export const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 p-4 space-y-8 overflow-y-auto">
+                <nav className="flex-1 p-4 space-y-8 overflow-y-auto w-full"> {/* Ensure w-full if needed, usually block */}
                     <div>
                         <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 font-display">Core Platform</p>
                         <div className="space-y-1">
@@ -63,19 +71,19 @@ export const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
                                 icon={<Home size={20} />}
                                 label="Dashboard"
                                 active={currentView === 'dashboard'}
-                                onClick={() => { setView('dashboard'); onClose?.(); }}
+                                onClick={() => handleNavigation('dashboard')}
                             />
                             <NavItem
                                 icon={<PlayCircle size={20} />}
                                 label="Active Campaigns"
                                 active={currentView === 'campaigns'}
-                                onClick={() => { setView('campaigns'); onClose?.(); }}
+                                onClick={() => handleNavigation('campaigns')}
                             />
                             <NavItem
                                 icon={<BarChart2 size={20} />}
                                 label="Performance"
                                 active={currentView === 'performance'}
-                                onClick={() => { setView('performance'); onClose?.(); }}
+                                onClick={() => handleNavigation('performance')}
                             />
                         </div>
                     </div>
@@ -87,13 +95,13 @@ export const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
                                 icon={<ShieldCheck size={20} />}
                                 label="Guardrails & Safety"
                                 active={currentView === 'guardrails'}
-                                onClick={() => { setView('guardrails'); onClose?.(); }}
+                                onClick={() => handleNavigation('guardrails')}
                             />
                             <NavItem
                                 icon={<Settings size={20} />}
                                 label="System Settings"
                                 active={currentView === 'settings'}
-                                onClick={() => { setView('settings'); onClose?.(); }}
+                                onClick={() => handleNavigation('settings')}
                             />
                         </div>
                     </div>

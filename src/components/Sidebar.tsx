@@ -23,38 +23,38 @@ export const Sidebar = () => {
             <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                 <div className="mb-6">
                     <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Core Platform</p>
-                    <NavItem 
-                        icon={<Home size={18} />} 
-                        label="Dashboard" 
-                        active={currentView === 'dashboard'} 
+                    <NavItem
+                        icon={<Home size={18} />}
+                        label="Dashboard"
+                        active={currentView === 'dashboard'}
                         onClick={() => setView('dashboard')}
                     />
-                    <NavItem 
-                        icon={<PlayCircle size={18} />} 
-                        label="Active Campaigns" 
-                        active={currentView === 'campaigns'} 
+                    <NavItem
+                        icon={<PlayCircle size={18} />}
+                        label="Active Campaigns"
+                        active={currentView === 'campaigns'}
                         onClick={() => setView('campaigns')}
                     />
-                    <NavItem 
-                        icon={<BarChart2 size={18} />} 
-                        label="Performance" 
-                        active={currentView === 'performance'} 
+                    <NavItem
+                        icon={<BarChart2 size={18} />}
+                        label="Performance"
+                        active={currentView === 'performance'}
                         onClick={() => setView('performance')}
                     />
                 </div>
 
                 <div>
                     <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Governance</p>
-                    <NavItem 
-                        icon={<ShieldCheck size={18} />} 
-                        label="Guardrails & Safety" 
-                        active={currentView === 'guardrails'} 
+                    <NavItem
+                        icon={<ShieldCheck size={18} />}
+                        label="Guardrails & Safety"
+                        active={currentView === 'guardrails'}
                         onClick={() => setView('guardrails')}
                     />
-                    <NavItem 
-                        icon={<Settings size={18} />} 
-                        label="System Settings" 
-                        active={currentView === 'settings'} 
+                    <NavItem
+                        icon={<Settings size={18} />}
+                        label="System Settings"
+                        active={currentView === 'settings'}
                         onClick={() => setView('settings')}
                     />
                 </div>
@@ -92,7 +92,7 @@ export const Sidebar = () => {
 };
 
 const NavItem = ({ icon, label, active = false, onClick }: { icon: any, label: string, active?: boolean, onClick: () => void }) => (
-    <button 
+    <button
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${active ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20 shadow-sm' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}`}
     >
