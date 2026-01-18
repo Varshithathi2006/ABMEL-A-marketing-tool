@@ -16,6 +16,25 @@ export const AgentExecutionView = () => {
         );
     }
 
+    // If failed, show error
+    if (status === 'failed') {
+        return (
+            <div className="flex flex-col items-center justify-center h-[60vh] text-slate-500">
+                <AlertTriangle className="w-16 h-16 mb-4 text-red-500" />
+                <h3 className="text-xl font-bold text-slate-200 mb-2">Refinement Needed</h3>
+                <p className="max-w-md text-center text-slate-400 mb-6">
+                    {logs[logs.length - 1] || "The agents encountered a blocker. Please adjust your inputs or try again."}
+                </p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors border border-slate-700"
+                >
+                    Retry Execution
+                </button>
+            </div>
+        );
+    }
+
     // Safety fallback
     if (!graph) return (
         <div className="flex flex-col items-center justify-center h-[60vh] text-slate-500">

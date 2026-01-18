@@ -1,39 +1,29 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, FileText, Check, AlertCircle, FileType } from 'lucide-react';
+import { Upload, FileText, Check } from 'lucide-react';
 import clsx from 'clsx';
 import { TiltCard } from '../../ui/TiltCard';
-import { SupabaseService } from '../../../services/SupabaseService';
 
 export const BrandGuidelinesWidget = ({ onComplete }: { onComplete: (data: any) => void }) => {
     const [file, setFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    // const [error, setError] = useState<string | null>(null);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
         if (!selectedFile) return;
 
         setFile(selectedFile);
-        setError(null);
+        // setError(null);
         setIsUploading(true);
 
         // Simulate processing / Real upload logic
         try {
             await new Promise(r => setTimeout(r, 1500)); // Fake parse time
-
-            // In real app, we would upload to storage here
-            // const text = await parseFile(selectedFile); 
-            // For now, custom logic or mock:
-            const mockText = "Brand Constraints: Use professional tone. Primary Color: Blue.";
-
-            // Persist (Mock or Real)
-            // await SupabaseService.getInstance().saveGuideline('temp', mockText, selectedFile.name);
-
             setIsUploading(false);
         } catch (err) {
-            setError("Failed to parse file structure.");
+            // setError("Failed to parse file structure.");
             setIsUploading(false);
         }
     };

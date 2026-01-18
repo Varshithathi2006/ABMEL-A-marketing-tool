@@ -29,9 +29,26 @@ export class SupabaseService {
 
     // --- CAMPAIGNS ---
     public async createCampaign(userId: string, input: any): Promise<string> {
-        // 1. Normalize Goal to Title Case to match DB Constraint ('Awareness', 'Conversion', etc.)
-        const rawGoal = input.goal || 'Awareness';
-        const formattedGoal = rawGoal.charAt(0).toUpperCase() + rawGoal.slice(1).toLowerCase();
+        // 1. Strict Goal Mapping (UI -> DB Enum)
+        const GOAL_MAP: Record<string, string> = {
+            'awareness': 'Awareness',
+            'brand awareness': 'Awareness',
+            'conversion': 'Conversion',
+            'sales': 'Conversion',
+            'conversions': 'Conversion',
+            'drive conversions': 'Conversion',
+            'retention': 'Retention',
+            'customer retention': 'Retention',
+            'loyalty': 'Retention',
+            'other': 'Other'
+        };
+
+        const rawGoal = (input.goal || 'Awareness').toLowerCase().trim();
+        const mappedGoal = GOAL_MAP[rawGoal];
+
+        if (!mappedGoal) {
+            throw new Error(`Invalid Campaign Goal: "${input.goal}". Supported: Awareness, Conversion, Retention.`);
+        }
 
         // 2. Insert into campaigns table
         const { data: campaign, error } = await supabase
@@ -40,7 +57,7 @@ export class SupabaseService {
                 user_id: userId,
                 product: input.product,
                 target_audience: input.audience || 'General',
-                campaign_goal: formattedGoal, // Fixed: Capitalized
+                campaign_goal: mappedGoal,
                 status: 'Planning'
             })
             .select('id')

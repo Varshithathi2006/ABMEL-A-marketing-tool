@@ -14,7 +14,7 @@ interface CampaignState {
     setInput: (input: Partial<CampaignInput>) => void;
 
     // Execution State
-    status: 'idle' | 'created' | 'planned' | 'running' | 'completed';
+    status: 'idle' | 'created' | 'planned' | 'running' | 'completed' | 'failed';
     graph: TaskGraph | null;
     logs: string[];
 
@@ -41,7 +41,22 @@ export const useCampaignStore = create<CampaignState>((set, get) => {
     orchestrator.subscribe((event: GraphEvent) => {
         const { graph } = get();
 
-        if (event.type === 'node_start') {
+        if (event.type === 'node_fail') {
+            get().addLog(`[${event.timestamp}] ERROR: Task ${event.nodeId} failed.`);
+            if (event.data?.error) {
+                get().addLog(`Reason: ${event.data.error}`);
+            }
+            set({ status: 'failed' });
+
+            if (graph && event.nodeId) {
+                const nodes = { ...graph.nodes };
+                if (nodes[event.nodeId]) {
+                    nodes[event.nodeId] = { ...nodes[event.nodeId], status: 'failed' };
+                    set({ graph: { ...graph, nodes } });
+                }
+            }
+
+        } else if (event.type === 'node_start') {
             get().addLog(`[${event.timestamp}] Started task: ${event.nodeId}`);
             if (graph && event.nodeId) {
                 const nodes = { ...graph.nodes };

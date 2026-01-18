@@ -4,6 +4,7 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 
 // 1. Define State
+// 1. Define State
 export interface AbmelState {
     product: string;
     goal: string;
@@ -16,71 +17,104 @@ export interface AbmelState {
     personas?: any;
     creativeVariants?: any[];
 
+    // Status
+    error?: string; // Fail-fast flag
+
     // Events (for UI)
     onEvent?: (event: any) => void;
 }
 
-// 2. Initialize Model
+// 2. Initialize Model (Updated to supported version)
 const model = new ChatGroq({
     apiKey: import.meta.env.VITE_GROQ_API_KEY,
-    model: "llama3-70b-8192",
-    temperature: 0.7
+    model: "llama-3.1-70b-versatile", // UPDATED: Valid model
+    temperature: 0.7,
+    maxRetries: 2
 });
 
 // 3. Define Agents as Runnables
 
 // --- Planning Agent ---
 const planningAgent = RunnableLambda.from(async (state: AbmelState) => {
-    state.onEvent?.({ type: 'node_start', nodeId: 'planning', timestamp: new Date().toISOString() });
+    if (state.error) return state; // Skip if previous failed
 
-    // Logic: Decompose Campaign
-    const plan = {
-        id: 'plan-' + Date.now(),
-        steps: ['Market Analysis', 'Persona Creation', 'Creative Ideation'],
-        strategy: 'High-Velocity Viral Growth'
-    };
+    try {
+        state.onEvent?.({ type: 'node_start', nodeId: 'planning', timestamp: new Date().toISOString() });
 
-    await new Promise(r => setTimeout(r, 800)); // Simulate think time
+        // Logic: Decompose Campaign
+        const plan = {
+            id: 'plan-' + Date.now(),
+            steps: ['Market Analysis', 'Persona Creation', 'Creative Ideation'],
+            strategy: 'High-Velocity Viral Growth',
+            status: 'success'
+        };
 
-    state.onEvent?.({ type: 'node_complete', nodeId: 'planning', data: { taskGraph: plan }, timestamp: new Date().toISOString() });
-    return { ...state, plan };
+        // Validate Plan produced something (Mock check)
+        if (!plan.steps || plan.steps.length === 0) {
+            throw new Error("Planning Agent failed to generate steps.");
+        }
+
+        await new Promise(r => setTimeout(r, 800)); // Simulate think time
+
+        state.onEvent?.({ type: 'node_complete', nodeId: 'planning', data: { taskGraph: plan }, timestamp: new Date().toISOString() });
+        return { ...state, plan };
+    } catch (e: any) {
+        state.onEvent?.({ type: 'node_fail', nodeId: 'planning', data: { error: e.message }, timestamp: new Date().toISOString() });
+        return { ...state, error: `Planning Failed: ${e.message}` };
+    }
 });
 
 // --- Market Intelligence Agent ---
 const marketAgent = RunnableLambda.from(async (state: AbmelState) => {
-    state.onEvent?.({ type: 'node_start', nodeId: 'market_research', timestamp: new Date().toISOString() });
+    if (state.error) return state;
 
-    // Logic: Simulate Search
-    const marketData = {
-        trends: ['AI Adoption', 'Privacy First'],
-        competitors: ['CompA', 'CompB']
-    };
+    try {
+        state.onEvent?.({ type: 'node_start', nodeId: 'market_research', timestamp: new Date().toISOString() });
 
-    await new Promise(r => setTimeout(r, 1200));
+        // Logic: Simulate Search
+        const marketData = {
+            trends: ['AI Adoption', 'Privacy First'],
+            competitors: ['CompA', 'CompB']
+        };
 
-    state.onEvent?.({ type: 'node_complete', nodeId: 'market_research', data: { marketSummary: "Growth Sector" }, timestamp: new Date().toISOString() });
-    return { ...state, marketData };
+        await new Promise(r => setTimeout(r, 1200));
+
+        state.onEvent?.({ type: 'node_complete', nodeId: 'market_research', data: { marketSummary: "Growth Sector" }, timestamp: new Date().toISOString() });
+        return { ...state, marketData };
+    } catch (e: any) {
+        state.onEvent?.({ type: 'node_fail', nodeId: 'market_research', data: { error: e.message }, timestamp: new Date().toISOString() });
+        return { ...state, error: `Market Research Failed: ${e.message}` };
+    }
 });
 
 // --- Persona Agent ---
 const personaAgent = RunnableLambda.from(async (state: AbmelState) => {
-    state.onEvent?.({ type: 'node_start', nodeId: 'persona_modeling', timestamp: new Date().toISOString() });
+    if (state.error) return state;
 
-    const personas = {
-        primaryPersona: { name: "The Tech Innovator", traits: ["Early Adopter", "High Spend"] }
-    };
+    try {
+        state.onEvent?.({ type: 'node_start', nodeId: 'persona_modeling', timestamp: new Date().toISOString() });
 
-    await new Promise(r => setTimeout(r, 1000));
+        const personas = {
+            primaryPersona: { name: "The Tech Innovator", traits: ["Early Adopter", "High Spend"] }
+        };
 
-    state.onEvent?.({ type: 'node_complete', nodeId: 'persona_modeling', data: { personas }, timestamp: new Date().toISOString() });
-    return { ...state, personas };
+        await new Promise(r => setTimeout(r, 1000));
+
+        state.onEvent?.({ type: 'node_complete', nodeId: 'persona_modeling', data: { personas }, timestamp: new Date().toISOString() });
+        return { ...state, personas };
+    } catch (e: any) {
+        state.onEvent?.({ type: 'node_fail', nodeId: 'persona_modeling', data: { error: e.message }, timestamp: new Date().toISOString() });
+        return { ...state, error: `Persona Modeling Failed: ${e.message}` };
+    }
 });
 
 // --- Creative Agent (Using Real LLM) ---
 const creativeAgent = RunnableLambda.from(async (state: AbmelState) => {
-    state.onEvent?.({ type: 'node_start', nodeId: 'creative_generation', timestamp: new Date().toISOString() });
+    if (state.error) return state;
 
     try {
+        state.onEvent?.({ type: 'node_start', nodeId: 'creative_generation', timestamp: new Date().toISOString() });
+
         const prompt = ChatPromptTemplate.fromMessages([
             ["system", `You are a Creative Director. Generate 5 creative headlines and rationales for {product} targeting {persona}. Return JSON with key "prompts".`],
             ["user", "Generate creatives."]
@@ -88,12 +122,8 @@ const creativeAgent = RunnableLambda.from(async (state: AbmelState) => {
 
         const chain = prompt.pipe(model).pipe(new StringOutputParser());
 
-        // Call LLM
         // Validation: Ensure valid inputs to avoid 400 Bad Request
-        if (!state.product) {
-            console.warn("Missing product in state, using fallback");
-            throw new Error("Product context missing");
-        }
+        if (!state.product) throw new Error("Product context missing");
 
         // Ensure we never pass undefined to the prompt template
         const productContext = state.product || "a generic product";
@@ -112,6 +142,7 @@ const creativeAgent = RunnableLambda.from(async (state: AbmelState) => {
             if (json.prompts) variants = json.prompts;
         } catch (e) {
             console.warn("Using fallback variants due to JSON parse error", e);
+            // Fallback strategy if LLM returns malformed JSON
             variants = [
                 { id: "1", headline: "Revolutionize Your Workflow", rationale: "Efficiency focus" },
                 { id: "2", headline: "The Future is Now", rationale: "Innovation focus" },
@@ -139,10 +170,10 @@ const creativeAgent = RunnableLambda.from(async (state: AbmelState) => {
         state.onEvent?.({ type: 'node_complete', nodeId: 'creative_generation', data: { variants: uiVariants }, timestamp: new Date().toISOString() });
         return { ...state, creativeVariants: uiVariants };
 
-    } catch (err) {
+    } catch (err: any) {
         console.error("Creative Agent Error", err);
-        state.onEvent?.({ type: 'node_fail', nodeId: 'creative_generation', data: { error: err }, timestamp: new Date().toISOString() });
-        throw err;
+        state.onEvent?.({ type: 'node_fail', nodeId: 'creative_generation', data: { error: err.message }, timestamp: new Date().toISOString() });
+        return { ...state, error: `Creative Generation Failed: ${err.message}` };
     }
 });
 
