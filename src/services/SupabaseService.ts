@@ -28,14 +28,19 @@ export class SupabaseService {
     }
 
     // --- CAMPAIGNS ---
-    public async createCampaign(userId: string, data: any): Promise<string> {
+    public async createCampaign(userId: string, input: any): Promise<string> {
+        // 1. Normalize Goal to Title Case to match DB Constraint ('Awareness', 'Conversion', etc.)
+        const rawGoal = input.goal || 'Awareness';
+        const formattedGoal = rawGoal.charAt(0).toUpperCase() + rawGoal.slice(1).toLowerCase();
+
+        // 2. Insert into campaigns table
         const { data: campaign, error } = await supabase
             .from('campaigns')
             .insert({
                 user_id: userId,
-                product: data.product,
-                target_audience: data.audience,
-                campaign_goal: data.goal,
+                product: input.product,
+                target_audience: input.audience || 'General',
+                campaign_goal: formattedGoal, // Fixed: Capitalized
                 status: 'Planning'
             })
             .select('id')

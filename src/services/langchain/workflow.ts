@@ -89,9 +89,19 @@ const creativeAgent = RunnableLambda.from(async (state: AbmelState) => {
         const chain = prompt.pipe(model).pipe(new StringOutputParser());
 
         // Call LLM
+        // Validation: Ensure valid inputs to avoid 400 Bad Request
+        if (!state.product) {
+            console.warn("Missing product in state, using fallback");
+            throw new Error("Product context missing");
+        }
+
+        // Ensure we never pass undefined to the prompt template
+        const productContext = state.product || "a generic product";
+        const personaContext = state.personas?.primaryPersona?.name || "General Audience";
+
         const resultString = await chain.invoke({
-            product: state.product,
-            persona: state.personas?.primaryPersona?.name || "General Audience"
+            product: productContext,
+            persona: personaContext
         });
 
         // Parse JSON (Heuristic)
