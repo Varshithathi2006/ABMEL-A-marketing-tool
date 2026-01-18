@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCampaignStore } from '../store/useCampaignStore';
-import { Loader2, CheckCircle2, Circle, AlertTriangle, FileText, Bot, ArrowRight } from 'lucide-react';
+import { Loader2, CheckCircle2, Circle, AlertTriangle, FileText, Bot } from 'lucide-react';
 import type { TaskNode } from '../types/graph';
 import { motion } from 'framer-motion';
 

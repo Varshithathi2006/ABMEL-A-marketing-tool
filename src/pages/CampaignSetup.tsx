@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Upload, CheckCircle, Database, AlertCircle } from 'lucide-react';
+import { CheckCircle, Database, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCampaignStore } from '../store/useCampaignStore';
 

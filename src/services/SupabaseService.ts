@@ -196,7 +196,7 @@ export class SupabaseService {
         return data as CreativeVariant[];
     }
 
-    public async getAllUserCreatives(userId: string): Promise<CreativeVariant[]> {
+    public async getAllUserCreatives(_userId: string): Promise<CreativeVariant[]> {
         // Fetch campaigns first to filter by user (RLS handles this but explicit check is good)
         // OR rely on RLS if policies are set exactly.
         // Assuming RLS policy: "Users can view own variants" -> EXISTS (campaign.user_id = uid)

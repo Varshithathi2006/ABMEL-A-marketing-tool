@@ -4,8 +4,6 @@ import { MarketIntelligenceAgent } from "../agents/MarketIntelligenceAgent";
 import { PersonaModelingAgent } from "../agents/PersonaModelingAgent";
 import { CreativeGenerationAgent } from "../agents/CreativeGenerationAgent";
 import { DecisionAgent } from "../agents/DecisionAgent";
-import type { AgentResult } from "../../types/abmel";
-
 // 1. Define State
 export interface AbmelState {
     product: string;
