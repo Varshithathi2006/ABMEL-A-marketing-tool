@@ -87,7 +87,7 @@ export const ProductDetailsWidget = ({ onComplete }: { onComplete: (data: any) =
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Audience */}
                             <div className="group">
                                 <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider ml-1 group-focus-within:text-cyan-400 transition-colors">Target Audience</label>
@@ -124,7 +124,7 @@ export const ProductDetailsWidget = ({ onComplete }: { onComplete: (data: any) =
                         {/* Goal Selector */}
                         <div>
                             <label className="block text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider ml-1">Optimization Goal</label>
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 {['awareness', 'conversion', 'retention'].map(g => (
                                     <button
                                         key={g}
