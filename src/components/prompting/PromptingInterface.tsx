@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom'; // Added
 import { MessageBubble } from './MessageBubble';
 import { Send, Sparkles, Play, Paperclip } from 'lucide-react';
 import clsx from 'clsx';
@@ -18,6 +19,7 @@ interface Message {
 }
 
 export const PromptingInterface = () => {
+    const navigate = useNavigate(); // Hook initialized
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState('');
     const [isWidgetActive, setIsWidgetActive] = useState(false);
@@ -151,7 +153,8 @@ export const PromptingInterface = () => {
                                 try {
                                     console.log('[UI] Calling planCampaign()...');
                                     await planCampaign();
-                                    console.log('[UI] planCampaign returned successfully');
+                                    console.log('[UI] planCampaign returned successfully, navigating to dashboard...');
+                                    navigate('/execution'); // Added navigation
                                 } catch (err) {
                                     console.error('[UI] Error calling planCampaign:', err);
                                     btn.innerHTML = 'Error - Try Again';
