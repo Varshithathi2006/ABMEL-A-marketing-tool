@@ -53,6 +53,14 @@ function App() {
           }
         />
         <Route
+          path="/execution"
+          element={
+            <ProtectedRoute>
+              <DashboardView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/campaigns/:id/creatives"
           element={
             <ProtectedRoute>

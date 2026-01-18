@@ -100,13 +100,17 @@ export const AgentExecutionView = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (creatives && creatives.length === 5 && graph?.context?.campaignId) {
-            console.log("Creatives Ready. Navigating to results...");
-            navigate(`/campaigns/${graph.context.campaignId}/creatives`);
+        if (creatives && creatives.length > 0 && graph?.context?.campaignId) {
+            // slightly delayed to allow user to see "Complete" state
+            const timer = setTimeout(() => {
+                console.log("Creatives Ready. Navigating to results...");
+                navigate(`/campaigns/${graph.context.campaignId}/creatives`);
+            }, 1500);
+            return () => clearTimeout(timer);
         }
     }, [creatives, graph, navigate]);
 
-    if ((creatives && creatives.length === 5) || status === 'CREATIVES_READY') {
+    if ((creatives && creatives.length > 0) || status === 'CREATIVES_READY') {
         return (
             <div className="flex flex-col items-center justify-center h-[60vh] text-slate-500 animate-in fade-in">
                 <CheckCircle2 className="w-16 h-16 mb-4 text-green-500" />
