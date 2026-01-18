@@ -112,18 +112,48 @@ export const AgentExecutionView = () => {
                 </div>
 
                 {/* Final Output Preview (Simple) */}
+                {/* Final Output Preview (Simple) */}
                 {status === 'completed' && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-6 text-white h-1/2 shadow-lg flex flex-col justify-center items-center text-center"
+                        className="bg-white rounded-xl border border-slate-200 shadow-lg flex flex-col h-1/2 overflow-hidden"
                     >
-                        <CheckCircle2 className="w-16 h-16 mb-4 text-blue-200" />
-                        <h3 className="text-xl font-bold mb-2">Optimization Complete</h3>
-                        <p className="text-blue-100 text-sm mb-6">Generated 5 Creative Variants and validated against brand safety.</p>
-                        <button className="bg-white text-blue-600 font-bold py-2 px-6 rounded-lg shadow-sm hover:shadow-md transition-all">
-                            View Final Report
-                        </button>
+                        <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                                <CheckCircle2 className="text-green-500 w-5 h-5" />
+                                Generated Creatives
+                            </h3>
+                            <button className="text-xs font-bold text-blue-600 hover:underline">Export</button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                            {/* Extract variants from creative agent result */}
+                            {graph?.nodes['creative_generation']?.result?.variants?.map((variant: any, idx: number) => (
+                                <div key={idx} className="p-3 rounded-lg border border-slate-100 hover:border-blue-200 hover:bg-blue-50/50 transition-colors group">
+                                    <div className="flex justify-between items-start mb-1">
+                                        <h4 className="font-bold text-slate-700 text-sm">
+                                            {variant.headline || `Strategy #${idx + 1}`}
+                                        </h4>
+                                        <span className="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wide">
+                                            Variant {idx + 1}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mb-2 leading-relaxed">
+                                        {variant.rationale || variant.body || "No description available."}
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded">
+                                            {variant.platform || "Omnichannel"}
+                                        </span>
+                                    </div>
+                                </div>
+                            )) || (
+                                    <div className="text-center py-8 text-slate-400 text-sm">
+                                        No variants found in output data.
+                                    </div>
+                                )}
+                        </div>
                     </motion.div>
                 )}
             </div>

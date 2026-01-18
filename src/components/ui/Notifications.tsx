@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, AlertTriangle, Info, AlertCircle } from 'lucide-react';
-import { useNotificationStore, Notification } from '../../store/useNotificationStore';
+import { useNotificationStore, type Notification } from '../../store/useNotificationStore';
 import clsx from 'clsx';
 
 export const Notifications = () => {

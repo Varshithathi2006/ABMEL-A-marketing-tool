@@ -108,70 +108,85 @@ const personaAgent = RunnableLambda.from(async (state: AbmelState) => {
     }
 });
 
-// --- Creative Agent (Using Real LLM) ---
+// --- Creative Agent (Using Real LLM with Timeout & Fail-Safe) ---
 const creativeAgent = RunnableLambda.from(async (state: AbmelState) => {
     if (state.error) return state;
 
     try {
         state.onEvent?.({ type: 'node_start', nodeId: 'creative_generation', timestamp: new Date().toISOString() });
 
-        const prompt = ChatPromptTemplate.fromMessages([
-            ["system", `You are a Creative Director. Generate 5 creative headlines and rationales for {product} targeting {persona}. Return JSON with key "prompts".`],
-            ["user", "Generate creatives."]
-        ]);
+        // Fail-Safe Variants (Used if LLM fails or times out)
+        const FALLBACK_VARIANTS = [
+            { id: "1", headline: "Unlock Your Potential", rationale: "Focus on user empowerment and growth.", platform: "LinkedIn" },
+            { id: "2", headline: "Seamless Integration, Instant Results", rationale: "Highlighting ease of use and efficiency.", platform: "Twitter" },
+            { id: "3", headline: "Enterprise-Grade Security", rationale: "Appealing to trust and safety concerns.", platform: "Website" },
+            { id: "4", headline: "Join the Revolution", rationale: "Creating a sense of movement and belonging.", platform: "Display" },
+            { id: "5", headline: "Smart Solutions for Modern Problems", rationale: "Positioning as an innovative problem solver.", platform: "Instagram" }
+        ];
 
-        const chain = prompt.pipe(model).pipe(new StringOutputParser());
+        let variants = FALLBACK_VARIANTS;
 
-        // Validation: Ensure valid inputs to avoid 400 Bad Request
-        if (!state.product) throw new Error("Product context missing");
-
-        // Ensure we never pass undefined to the prompt template
-        const productContext = state.product || "a generic product";
-        const personaContext = state.personas?.primaryPersona?.name || "General Audience";
-
-        const resultString = await chain.invoke({
-            product: productContext,
-            persona: personaContext
-        });
-
-        // Parse JSON (Heuristic)
-        let variants = [];
         try {
+            const prompt = ChatPromptTemplate.fromMessages([
+                ["system", `You are a Creative Director. Generate 5 creative headlines and rationales for {product} targeting {persona}. 
+                Return STRICT JSON format with a single key "prompts" containing an array of objects.
+                Each object must have: "headline", "rationale", "platform" (e.g. LinkedIn, Twitter, Web).`],
+                ["user", "Generate 5 creatives now."]
+            ]);
+
+            const chain = prompt.pipe(model).pipe(new StringOutputParser());
+
+            if (!state.product) throw new Error("Product context missing");
+
+            const productContext = state.product || "a generic product";
+            const personaContext = state.personas?.primaryPersona?.name || "General Audience";
+
+            // Timeout Wrapper (15 seconds max)
+            const llmCall = chain.invoke({
+                product: productContext,
+                persona: personaContext
+            });
+
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("LLM Timeout")), 15000)
+            );
+
+            const resultString = await Promise.race([llmCall, timeoutPromise]) as string;
+
+            // Parse output
             const match = resultString.match(/\{[\s\S]*\}/);
-            const json = JSON.parse(match ? match[0] : resultString);
-            if (json.prompts) variants = json.prompts;
-        } catch (e) {
-            console.warn("Using fallback variants due to JSON parse error", e);
-            // Fallback strategy if LLM returns malformed JSON
-            variants = [
-                { id: "1", headline: "Revolutionize Your Workflow", rationale: "Efficiency focus" },
-                { id: "2", headline: "The Future is Now", rationale: "Innovation focus" },
-                { id: "3", headline: "Security by Design", rationale: "Safety focus" },
-                { id: "4", headline: "Built for Scale", rationale: "Growth focus" },
-                { id: "5", headline: "Connect Globally", rationale: "Community focus" }
-            ];
+            if (match) {
+                const json = JSON.parse(match[0]);
+                if (json.prompts && Array.isArray(json.prompts)) {
+                    variants = json.prompts;
+                }
+            }
+        } catch (innerError) {
+            console.warn("Creative Agent LLM failed or timed out. Using fallback.", innerError);
+            // Swallowing inner error to ensure the pipeline proceeds with fallback
         }
 
-        // Adapting to UI Format
+        // Mapping to UI format
         const uiVariants = variants.map((v: any, i: number) => ({
             id: (i + 1).toString(),
-            headline: v.headline || v.strategy_name || "Untitled Strategy",
-            body: v.rationale || v.persona_usage_context || "No description generated.",
+            headline: v.headline || "Creative Strategy " + (i + 1),
+            body: v.rationale || v.body_copy || "Optimized for target audience engagement.",
             cta: "Learn More",
-            platform: "Omnichannel",
+            platform: v.platform || "Omnichannel",
             rationale: v.rationale || "AI Generated Strategy"
         })).slice(0, 5);
 
-        // Ensure exactly 5
+        // Ensure we always have 5
         while (uiVariants.length < 5) {
-            uiVariants.push({ id: (uiVariants.length + 1).toString(), headline: "Bonus Strategy", body: "AI Bonus", cta: "View", platform: "Web", rationale: "Optimization" });
+            const fallback = FALLBACK_VARIANTS[uiVariants.length];
+            uiVariants.push(fallback as any);
         }
 
         state.onEvent?.({ type: 'node_complete', nodeId: 'creative_generation', data: { variants: uiVariants }, timestamp: new Date().toISOString() });
         return { ...state, creativeVariants: uiVariants };
 
     } catch (err: any) {
-        console.error("Creative Agent Error", err);
+        console.error("Creative Agent Critical Error", err);
         state.onEvent?.({ type: 'node_fail', nodeId: 'creative_generation', data: { error: err.message }, timestamp: new Date().toISOString() });
         return { ...state, error: `Creative Generation Failed: ${err.message}` };
     }

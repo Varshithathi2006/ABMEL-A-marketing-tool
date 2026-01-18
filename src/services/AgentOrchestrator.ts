@@ -42,8 +42,11 @@ export class AgentOrchestrator {
                         persona_modeling: { id: 'persona_modeling', agentName: 'PersonaAgent', status: 'idle', dependencies: ['market_research'], inputContextKeys: [], outputContextKeys: [] },
                         creative_generation: { id: 'creative_generation', agentName: 'CreativeAgent', status: 'idle', dependencies: ['persona_modeling'], inputContextKeys: [], outputContextKeys: [] },
                         evaluation_ctr: { id: 'evaluation_ctr', agentName: 'CriticAgent', status: 'idle', dependencies: ['creative_generation'], inputContextKeys: [], outputContextKeys: [] },
+                        evaluation_mem: { id: 'evaluation_mem', agentName: 'MemoryAgent', status: 'idle', dependencies: ['creative_generation'], inputContextKeys: [], outputContextKeys: [] },
+                        evaluation_brand: { id: 'evaluation_brand', agentName: 'BrandSafetyAgent', status: 'idle', dependencies: ['creative_generation'], inputContextKeys: [], outputContextKeys: [] },
                         decision: { id: 'decision', agentName: 'DecisionAgent', status: 'idle', dependencies: ['evaluation_ctr'], inputContextKeys: [], outputContextKeys: [] },
-                        guardrails: { id: 'guardrails', agentName: 'SafetyAgent', status: 'idle', dependencies: ['decision'], inputContextKeys: [], outputContextKeys: [] }
+                        guardrails: { id: 'guardrails', agentName: 'SafetyAgent', status: 'idle', dependencies: ['decision'], inputContextKeys: [], outputContextKeys: [] },
+                        learning: { id: 'learning', agentName: 'LearningAgent', status: 'idle', dependencies: ['guardrails'], inputContextKeys: [], outputContextKeys: [] }
                     },
                     context: input
                 }
